@@ -30,19 +30,30 @@
     "firstSeen": "Thấy lần đầu",
     "openOriginal": "Mở tin gốc",
     "perYear": "/ năm",
-    "back": "Về trang tổng quan"
+    "back": "Về trang tổng quan",
+    "posted": "Ngày đăng",
+    "role": "Vai trò"
   },
   "overview": {
-    "activeJobs": "Tin đang tuyển",
-    "activeJobsHint": "Thấy trong {days} ngày gần nhất",
+    "activeJobs": "Tin tuyển dụng",
+    "activeJobsHint": "Đăng từ {from} đến {to}",
     "techJobs": "Tin có kỹ năng nhận diện được",
     "withSalary": "Tin có lương dùng được",
     "sources": "Nguồn",
     "topSkills": "Kỹ năng hàng đầu",
     "topSkillsHint": "Tỉ lệ tin nhắc tới ít nhất một kỹ năng đã biết",
-    "trend": "Tin mới thấy mỗi ngày",
-    "trendHint": "30 ngày gần nhất. Tính theo ngày scraper thấy tin lần đầu, không phải ngày đăng.",
-    "bySource": "Số tin theo nguồn"
+    "trend": "Số tin theo thời gian",
+    "trendHint": "Theo ngày đăng. Site không cho ngày đăng thì dùng ngày scraper thấy tin lần đầu.",
+    "bySource": "Số tin theo nguồn",
+    "dedupe": "Tin đăng trên nhiều site chỉ được tính một lần.",
+    "roleShare": "Tin theo vai trò",
+    "roleShareHint": "Tin có kỹ năng nhận diện được, nhóm theo chức danh",
+    "skillTrend": "Kỹ năng hàng đầu theo thời gian",
+    "skillTrendHint": "Số tin mỗi kỳ nhắc tới từng kỹ năng trong năm kỹ năng được yêu cầu nhiều nhất",
+    "regionSplit": "Theo khu vực",
+    "centerJobs": "tin",
+    "roleSalary": "Lương theo vai trò",
+    "roleSalaryHint": "Quy về năm. Thanh trải từ phân vị 25 đến 75, vạch là trung vị. Lương theo tháng nhân 12, không quy đổi tiền tệ."
   },
   "skill": {
     "notFound": "Không tìm thấy kỹ năng",
@@ -50,17 +61,21 @@
     "salaryTitle": "Lương (quy về năm)",
     "salaryHint": "Trung vị và tứ phân vị của điểm giữa mỗi khoảng lương. Lương theo tháng được nhân 12. Không bao giờ quy đổi tiền tệ.",
     "coverage": "{n} trên {total} tin có lương dùng được ({pct}%)",
-    "latest": "Tin mới nhất"
+    "latest": "Tin mới nhất",
+    "rolesTitle": "Vai trò yêu cầu kỹ năng này"
   },
   "salary": {
     "title": "Lương theo kỹ năng",
-    "intro": "Lương quy về năm theo từng kỹ năng và loại tiền. Chỉ hiển thị kỹ năng có ít nhất {min} tin có lương. Lương theo tháng được nhân 12, không quy đổi tiền tệ.",
+    "intro": "Lương quy về năm theo vai trò và theo kỹ năng, tách theo loại tiền. Chỉ hiển thị nhóm có ít nhất {min} tin có lương. Lương theo tháng nhân 12, không quy đổi tiền tệ.",
     "skill": "Kỹ năng",
     "postings": "Số tin",
     "p25": "Phân vị 25",
     "median": "Trung vị",
     "p75": "Phân vị 75",
-    "coverage": "Tổng thể: {n} trên {total} tin đang tuyển có lương dùng được ({pct}%)."
+    "coverage": "Tổng thể: {n} trên {total} tin đang tuyển có lương dùng được ({pct}%).",
+    "byRole": "Theo vai trò",
+    "bySkill": "Theo kỹ năng",
+    "rangeHint": "Quy về năm. Thanh trải từ phân vị 25 đến 75, vạch là trung vị."
   },
   "footer": {
     "sources": "Nguồn dữ liệu",
@@ -68,5 +83,33 @@
   },
   "theme": {
     "toggle": "Chuyển giao diện sáng/tối"
+  },
+  "range": {
+    "label": "Khoảng thời gian",
+    "7d": "1T",
+    "30d": "1th",
+    "90d": "3th",
+    "1y": "1N",
+    "custom": "Tùy chọn",
+    "from": "Từ",
+    "to": "Đến"
+  },
+  "roleNames": {
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "fullstack": "Full-stack",
+    "devops": "DevOps / Cloud",
+    "data": "Dữ liệu",
+    "ai-ml": "AI / ML",
+    "mobile": "Mobile",
+    "qa": "QA / Kiểm thử",
+    "security": "Bảo mật",
+    "embedded": "Nhúng",
+    "management": "Quản lý",
+    "software": "Phần mềm (chung)",
+    "other": "Khác"
+  },
+  "roles": {
+    "more": "Vai trò khác"
   }
 }

@@ -9,7 +9,7 @@ import { sourceInfo } from "@/lib/sources";
 
 async function Attribution({ dict }: { dict: Dictionary }) {
   const sql = await getSql();
-  const rows = await sql<{ source: string }[]>`SELECT DISTINCT source FROM jobs ORDER BY source`;
+  const rows = await sql<{ source: string }[]>`SELECT source FROM job_sources ORDER BY source`;
   if (rows.length === 0) return null;
   return (
     <p>
@@ -47,6 +47,16 @@ export function SiteShell({
     salary: dict.nav.salary,
     regionLabel: dict.region.label,
     regions: { all: dict.region.all, vn: dict.region.vn, intl: dict.region.intl },
+    rangeLabel: dict.range.label,
+    ranges: {
+      "7d": dict.range["7d"],
+      "30d": dict.range["30d"],
+      "90d": dict.range["90d"],
+      "1y": dict.range["1y"],
+      custom: dict.range.custom,
+    },
+    from: dict.range.from,
+    to: dict.range.to,
     languageLabel: dict.language.label,
     languageNames: { en: dict.language.en, vi: dict.language.vi },
     themeToggle: dict.theme.toggle,

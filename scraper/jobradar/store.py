@@ -7,20 +7,21 @@ from datetime import datetime
 
 import psycopg
 
+from jobradar.extract.roles import classify_role
 from jobradar.extract.skills import Skill
-from jobradar.normalize import NormalizedJob
+from jobradar.normalize import NormalizedJob, make_dup_key
 
 # first_seen_at is deliberately absent from the UPDATE list: it is set once on insert.
 _UPSERT_JOB = """
 INSERT INTO jobs (
     dedupe_key, source, external_id, region, title, company, location, url,
     description_html, salary_min, salary_max, salary_currency, salary_period, salary_raw,
-    posted_at, first_seen_at, last_seen_at
+    posted_at, role, dup_key, first_seen_at, last_seen_at
 ) VALUES (
     %(dedupe_key)s, %(source)s, %(external_id)s, %(region)s, %(title)s, %(company)s,
     %(location)s, %(url)s, %(description_html)s, %(salary_min)s, %(salary_max)s,
     %(salary_currency)s, %(salary_period)s, %(salary_raw)s, %(posted_at)s,
-    %(seen_at)s, %(seen_at)s
+    %(role)s, %(dup_key)s, %(seen_at)s, %(seen_at)s
 )
 ON CONFLICT (dedupe_key) DO UPDATE SET
     title = EXCLUDED.title,
@@ -34,6 +35,8 @@ ON CONFLICT (dedupe_key) DO UPDATE SET
     salary_period = EXCLUDED.salary_period,
     salary_raw = EXCLUDED.salary_raw,
     posted_at = EXCLUDED.posted_at,
+    role = EXCLUDED.role,
+    dup_key = EXCLUDED.dup_key,
     last_seen_at = EXCLUDED.last_seen_at
 RETURNING id, (xmax = 0) AS inserted
 """
@@ -99,3 +102,25 @@ def finish_run(
             "jobs_new = %s, error = %s WHERE id = %s",
             (status, jobs_seen, jobs_new, error, run_id),
         )
+
+
+def backfill_classification(conn: psycopg.Connection) -> int:
+    """Recompute role and dup_key for every stored job. Return how many rows changed.
+
+    Run after changing the role rules or the de-duplication key, and once after migration 0002
+    to fill the new columns for jobs stored earlier.
+    """
+    rows = conn.execute(
+        "SELECT j.id, j.title, j.company, j.role, j.dup_key, "
+        "       coalesce(array_agg(js.skill_slug) FILTER (WHERE js.skill_slug IS NOT NULL), '{}') "
+        "FROM jobs j LEFT JOIN job_skills js ON js.job_id = j.id GROUP BY j.id"
+    ).fetchall()
+    updates = []
+    for job_id, title, company, role, dup_key, skills in rows:
+        new_role = classify_role(title, skills)
+        new_key = make_dup_key(company, title)
+        if (new_role, new_key) != (role, dup_key):
+            updates.append((new_role, new_key, job_id))
+    with conn.transaction(), conn.cursor() as cur:
+        cur.executemany("UPDATE jobs SET role = %s, dup_key = %s WHERE id = %s", updates)
+    return len(updates)

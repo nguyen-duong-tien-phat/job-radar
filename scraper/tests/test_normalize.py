@@ -8,6 +8,7 @@ from jobradar.normalize import (
     canonical_url,
     html_to_text,
     make_dedupe_key,
+    make_dup_key,
     normalize,
     parse_posted_at,
 )
@@ -113,3 +114,36 @@ def test_unparseable_salary_text_leaves_salary_empty(extractor):
     assert job.salary_min is None
     assert job.salary_currency is None
     assert job.salary_raw == "Negotiable"
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [
+        # Same employer written differently on two sites
+        (
+            ("CÔNG TY TNHH FPT Software", "Senior Backend Engineer"),
+            ("FPT Software", "senior backend engineer"),
+        ),
+        (("Acme, Inc.", "DevOps Engineer (Remote)"), ("ACME", "DevOps Engineer")),
+        (("Công ty Cổ phần VNETWORK", "System Engineer"), ("VNETWORK JSC", "System  Engineer")),
+    ],
+)
+def test_dup_key_matches_the_same_posting_across_sites(a, b):
+    assert make_dup_key(*a) == make_dup_key(*b)
+
+
+def test_dup_key_separates_different_postings():
+    assert make_dup_key("Acme", "Backend Engineer") != make_dup_key("Acme", "Frontend Engineer")
+    assert make_dup_key("Acme", "Backend Engineer") != make_dup_key("Globex", "Backend Engineer")
+
+
+def test_dup_key_is_none_when_company_or_title_is_too_short():
+    assert make_dup_key("", "Backend Engineer") is None
+    assert make_dup_key("Inc.", "Backend Engineer") is None  # only legal noise left
+    assert make_dup_key("Acme", "QA") is None
+
+
+def test_normalize_sets_role_and_dup_key(extractor):
+    job = normalize(_raw(title="Senior React Native Developer", company="Acme Inc."), extractor)
+    assert job.role == "mobile"
+    assert job.dup_key == make_dup_key("Acme", "Senior React Native Developer")

@@ -11,14 +11,3 @@ export const hasLocale = (value: string): value is Locale =>
 export const formatLocale = (locale: Locale) => (locale === "vi" ? "vi-VN" : "en-US");
 
 export type Region = "vn" | "intl";
-
-export function parseRegion(value: string | string[] | undefined): Region | null {
-  const v = Array.isArray(value) ? value[0] : value;
-  return v === "vn" || v === "intl" ? v : null;
-}
-
-/** Build an internal link that keeps the locale and the region filter. */
-export function href(locale: Locale, path: string, region: Region | null): string {
-  const base = `/${locale}${path === "/" ? "" : path}`;
-  return region ? `${base}?region=${region}` : base;
-}

@@ -20,7 +20,9 @@ Scrapes IT job postings every day from Vietnamese and international job boards, 
 - **Skills and salaries out of free text.** A 72-skill dictionary and a salary parser that reads `25-35 triệu`, `1.500 - 2.000 USD/tháng` and `$120–150k`.
 - **Safe to re-run.** Postings are de-duplicated and keep their first-seen and last-seen dates, so a daily run never creates duplicates.
 - **Built to the sites' rules.** Every source was checked against its robots.txt and terms first. Sources that forbid or block automated access were left out, not worked around.
-- **Bilingual, two themes.** English and Vietnamese UI, light and dark themes, a region filter, and controls that stay put while you navigate.
+- **One statistics page.** Filter by region and by date range (1W, 1M, 3M, 1Y or custom dates) and see postings over time, top skills and how they trend, a role breakdown (frontend, backend, DevOps, data, ...) worked out from job titles, and salary ranges per role.
+- **One posting, counted once.** The same job listed on several sites is merged (company and title, ignoring accents and legal forms like "Inc." or "Công ty TNHH"), keeping the copy that has a salary.
+- **Bilingual, two themes.** English and Vietnamese UI, light and dark themes, and controls that stay put while you navigate.
 
 ## Tech stack
 
@@ -63,8 +65,8 @@ The scraper fetches each source, normalizes postings, extracts skills and salary
 
 Numbers from one local run on 2026-11-27, against a development database:
 
-- 499 active postings from the first 5 sources (CareerViet was added afterwards); 405 mention at least one known skill; 68 include a usable salary.
-- 100 automated tests in the scraper (parsers, adapters against real saved responses, storage against a real Postgres) pass, and `ruff` reports no issues.
+- 507 postings stored from 6 sources; 489 distinct after merging duplicates. In the last month: 483 postings, 395 with a known skill, 71 with a usable salary. Only one posting so far appears on two sites, so cross-site merging mostly protects future growth.
+- 145 automated tests in the scraper (parsers, adapters against real saved responses, storage against a real Postgres) pass, and `ruff` reports no issues.
 - The dashboard is verified in a browser on desktop and 375 px mobile, in both themes and both languages.
 
 TODO: add production numbers (postings per week, days of history) once the daily job has been running for a while.

@@ -60,7 +60,7 @@ def _count(conn, table):
 def test_migrations_are_idempotent(conn):
     assert db.apply_migrations(conn) == []
     versions = [r[0] for r in conn.execute("SELECT version FROM schema_migrations")]
-    assert versions == ["0001_init"]
+    assert versions == ["0001_init", "0002_roles_and_dedupe"]
 
 
 def test_second_run_creates_no_duplicates_and_keeps_first_seen(conn, jobs, extractor):
@@ -90,7 +90,7 @@ def test_writes_are_committed_and_visible_to_other_connections(conn, jobs, extra
         assert _count(other, "jobs") == 5
         assert _count(other, "skills") > 0
         assert other.execute("SELECT status FROM scrape_runs").fetchone() == ("ok",)
-        assert other.execute("SELECT version FROM schema_migrations").fetchone() == ("0001_init",)
+        assert other.execute("SELECT count(*) FROM schema_migrations").fetchone() == (2,)
 
 
 def test_job_skills_are_replaced_not_accumulated(conn, jobs, extractor):
@@ -153,3 +153,109 @@ def test_scrape_run_lifecycle(conn):
         (run_id,),
     ).fetchone()
     assert row == ("ok", 5, 3, None, True)
+
+
+def _job(**overrides):
+    base = {
+        "dedupe_key": "k1",
+        "source": "topdev",
+        "external_id": "1",
+        "region": "vn",
+        "title": "Senior Backend Engineer",
+        "company": "FPT Software",
+        "location": None,
+        "url": "https://example.com/1",
+        "description_html": None,
+        "salary_min": None,
+        "salary_max": None,
+        "salary_currency": None,
+        "salary_period": None,
+        "salary_raw": None,
+        "posted_at": None,
+        "role": "backend",
+        "dup_key": "same-posting",
+        "skills": [],
+    }
+    from jobradar.normalize import NormalizedJob
+
+    return NormalizedJob(**{**base, **overrides})
+
+
+def test_same_posting_on_two_sites_is_one_row_in_the_unique_view(conn, extractor):
+    store.sync_skills(conn, extractor.skills)
+    seen = datetime(2026, 11, 27, tzinfo=UTC)
+    no_salary = _job(dedupe_key="a", source="topdev")
+    with_salary = _job(
+        dedupe_key="b",
+        source="careerviet",
+        salary_min=20e6,
+        salary_max=30e6,
+        salary_currency="VND",
+        salary_period="month",
+    )
+    other = _job(dedupe_key="c", dup_key="different", title="Other job")
+    store.save_jobs(conn, [no_salary, with_salary, other], seen_at=seen)
+
+    assert _count(conn, "jobs") == 3
+    rows = conn.execute("SELECT source FROM jobs_unique ORDER BY source").fetchall()
+    assert len(rows) == 2  # 3 stored rows, 2 distinct postings
+    kept = conn.execute("SELECT source FROM jobs_unique WHERE dup_key = 'same-posting'").fetchone()
+    assert kept == ("careerviet",)  # the copy with a salary wins
+
+
+def test_jobs_without_a_dup_key_are_never_merged(conn):
+    seen = datetime(2026, 11, 27, tzinfo=UTC)
+    store.save_jobs(
+        conn,
+        [_job(dedupe_key="x", dup_key=None), _job(dedupe_key="y", dup_key=None)],
+        seen_at=seen,
+    )
+    assert _count(conn, "jobs_unique") == 2
+
+
+def test_event_at_falls_back_to_first_seen(conn):
+    seen = datetime(2026, 11, 27, tzinfo=UTC)
+    posted = datetime(2026, 11, 1, tzinfo=UTC)
+    store.save_jobs(
+        conn,
+        [_job(dedupe_key="p", dup_key="p", posted_at=posted), _job(dedupe_key="q", dup_key="q")],
+        seen_at=seen,
+    )
+    rows = dict(conn.execute("SELECT dedupe_key, event_at FROM jobs_unique").fetchall())
+    assert rows == {"p": posted, "q": seen}
+
+
+def test_backfill_fills_role_and_dup_key_for_existing_rows(conn, extractor):
+    store.sync_skills(conn, extractor.skills)
+    seen = datetime(2026, 11, 27, tzinfo=UTC)
+    stale = _job(
+        dedupe_key="s", role=None, dup_key=None, title="DevOps Engineer", company="Acme Inc."
+    )
+    store.save_jobs(conn, [stale], seen_at=seen)
+
+    assert store.backfill_classification(conn) == 1
+    assert conn.execute("SELECT role, dup_key IS NOT NULL FROM jobs").fetchone() == ("devops", True)
+    assert store.backfill_classification(conn) == 0  # nothing left to change
+
+
+def test_readonly_role_reads_the_view_but_not_the_raw_table(conn, extractor):
+    store.sync_skills(conn, extractor.skills)
+    store.save_jobs(conn, [_job(dedupe_key="r")], seen_at=datetime(2026, 11, 27, tzinfo=UTC))
+    conn.execute("DROP ROLE IF EXISTS jobradar_web_test")
+    conn.execute("CREATE ROLE jobradar_web_test LOGIN PASSWORD 'pw'")
+    conn.execute("GRANT USAGE ON SCHEMA public TO jobradar_web_test")
+    conn.execute(
+        "GRANT SELECT ON jobs_unique, job_sources, job_skills, skills TO jobradar_web_test"
+    )
+    try:
+        info = psycopg.conninfo.conninfo_to_dict(TEST_URL)
+        info.update(user="jobradar_web_test", password="pw")
+        with psycopg.connect(**info, autocommit=True) as ro:
+            assert ro.execute("SELECT count(*) FROM jobs_unique").fetchone() == (1,)
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+                ro.execute("SELECT count(*) FROM jobs")
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+                ro.execute("DELETE FROM job_skills")
+    finally:
+        conn.execute("DROP OWNED BY jobradar_web_test")
+        conn.execute("DROP ROLE jobradar_web_test")

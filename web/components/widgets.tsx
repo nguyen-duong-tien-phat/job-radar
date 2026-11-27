@@ -1,11 +1,10 @@
-import Link from "next/link";
-
-import { formatDate, formatMoney, formatNumber, formatPercent, formatSalaryRange } from "@/lib/format";
-import type { Dictionary } from "@/lib/i18n";
-import { href, type Locale, type Region } from "@/lib/locales";
-import { fmt } from "@/lib/i18n";
-import type { DayCount, SalaryStats, SkillCount, SkillJob } from "@/lib/queries";
+import { formatDate, formatNumber, formatSalaryRange } from "@/lib/format";
+import { fmt, type Dictionary } from "@/lib/i18n";
+import type { Locale } from "@/lib/locales";
+import type { SalaryStats, SkillJob } from "@/lib/queries";
+import { roleName } from "@/lib/roles";
 import { sourceInfo } from "@/lib/sources";
+import { formatMoney } from "@/lib/format";
 
 const stagger = (index: number) => ({ "--i": index }) as React.CSSProperties;
 
@@ -49,87 +48,9 @@ export function StatCard({
       style={stagger(index)}
     >
       <div className="text-sm text-foreground/60">{label}</div>
-      <div className="mt-1 font-display text-3xl font-medium tabular-nums">
-        {value}
-      </div>
+      <div className="mt-1 font-display text-3xl font-medium tabular-nums">{value}</div>
       {hint && <div className="mt-1 text-xs text-foreground/60">{hint}</div>}
     </div>
-  );
-}
-
-export function SkillBars({
-  skills,
-  total,
-  lang,
-  region,
-  dict,
-}: {
-  skills: SkillCount[];
-  total: number;
-  lang: Locale;
-  region: Region | null;
-  dict: Dictionary;
-}) {
-  if (skills.length === 0) return <p className="text-sm text-foreground/60">{dict.common.noData}</p>;
-  const max = Math.max(...skills.map((s) => s.jobs));
-  return (
-    <ol className="flex flex-col gap-2">
-      {skills.map((skill, i) => (
-        <li key={skill.slug} className="reveal" style={stagger(i)}>
-          <Link
-            href={href(lang, `/skills/${skill.slug}`, region)}
-            className="group -mx-2 grid grid-cols-[8rem_1fr_6.5rem] items-center gap-3 rounded-md px-2 py-1 text-sm transition-colors hover:bg-foreground/5"
-          >
-            <span className="truncate transition-colors group-hover:text-accent">{skill.name}</span>
-            <span className="h-2 rounded-full bg-foreground/10" aria-hidden>
-              <span
-                className="grow-x block h-2 rounded-full bg-accent transition-[width,filter] duration-500 group-hover:brightness-110"
-                style={{ ...stagger(i), width: `${(skill.jobs / max) * 100}%` }}
-              />
-            </span>
-            <span className="text-right tabular-nums text-foreground/70">
-              {formatNumber(skill.jobs, lang)} · {formatPercent(skill.jobs, total)}%
-            </span>
-          </Link>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-export function TrendChart({ points, label, lang }: { points: DayCount[]; label: string; lang: Locale }) {
-  const width = 600;
-  const height = 110;
-  const gap = 2;
-  const max = Math.max(1, ...points.map((p) => p.jobs));
-  const barWidth = (width - gap * (points.length - 1)) / points.length;
-  return (
-    <svg viewBox={`0 0 ${width} ${height + 18}`} role="img" aria-label={label} className="w-full">
-      {points.map((p, i) => {
-        const h = (p.jobs / max) * height;
-        return (
-          <rect
-            key={p.day}
-            x={i * (barWidth + gap)}
-            y={height - h}
-            width={barWidth}
-            height={Math.max(h, p.jobs > 0 ? 1 : 0)}
-            rx={1.5}
-            className="grow-y fill-accent transition-opacity hover:opacity-70"
-            style={stagger(i)}
-          >
-            <title>{`${p.day}: ${formatNumber(p.jobs, lang)}`}</title>
-          </rect>
-        );
-      })}
-      <line x1={0} x2={width} y1={height + 0.5} y2={height + 0.5} className="stroke-foreground/20" />
-      <text x={0} y={height + 14} className="fill-foreground/50 text-[10px]">
-        {points[0]?.day}
-      </text>
-      <text x={width} y={height + 14} textAnchor="end" className="fill-foreground/50 text-[10px]">
-        {points[points.length - 1]?.day}
-      </text>
-    </svg>
   );
 }
 
@@ -186,9 +107,10 @@ export function JobTable({ jobs, lang, dict }: { jobs: SkillJob[]; lang: Locale;
           <tr>
             <th className="py-2 pr-3 font-medium">{dict.common.title}</th>
             <th className="py-2 pr-3 font-medium">{dict.common.company}</th>
+            <th className="py-2 pr-3 font-medium">{dict.common.role}</th>
             <th className="py-2 pr-3 font-medium">{dict.common.salary}</th>
             <th className="py-2 pr-3 font-medium">{dict.common.source}</th>
-            <th className="py-2 font-medium">{dict.common.firstSeen}</th>
+            <th className="py-2 font-medium">{dict.common.posted}</th>
           </tr>
         </thead>
         <tbody>
@@ -201,7 +123,10 @@ export function JobTable({ jobs, lang, dict }: { jobs: SkillJob[]; lang: Locale;
               job.salaryPeriod,
             );
             return (
-              <tr key={job.id} className="border-t border-foreground/10 align-top transition-colors hover:bg-foreground/5">
+              <tr
+                key={job.id}
+                className="border-t border-foreground/10 align-top transition-colors hover:bg-foreground/5"
+              >
                 <td className="py-2 pr-3">
                   <a
                     href={job.url}
@@ -214,13 +139,14 @@ export function JobTable({ jobs, lang, dict }: { jobs: SkillJob[]; lang: Locale;
                   </a>
                 </td>
                 <td className="py-2 pr-3">{job.company}</td>
+                <td className="py-2 pr-3 whitespace-nowrap">{roleName(dict.roleNames, job.role)}</td>
                 <td className="py-2 pr-3 whitespace-nowrap tabular-nums">{salary ?? "—"}</td>
                 <td className="py-2 pr-3 whitespace-nowrap">
                   <a href={info.url} rel="noopener" className="underline underline-offset-2">
                     {info.name}
                   </a>
                 </td>
-                <td className="py-2 whitespace-nowrap">{formatDate(job.firstSeenAt, lang)}</td>
+                <td className="py-2 whitespace-nowrap">{formatDate(job.eventAt, lang)}</td>
               </tr>
             );
           })}

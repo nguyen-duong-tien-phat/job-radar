@@ -88,6 +88,20 @@ def _store_run(sources: list[Source], database_url: str) -> int:
     return 1 if failed else 0
 
 
+def _backfill(database_url: str | None) -> int:
+    if not database_url:
+        print("No database: pass --database-url or set DATABASE_URL.", file=sys.stderr)
+        return 2
+    conn = db.connect(database_url)
+    try:
+        for version in db.apply_migrations(conn):
+            log.info("applied migration %s", version)
+        print(f"backfill: {store.backfill_classification(conn)} jobs updated")
+    finally:
+        conn.close()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="jobradar", description="Run the job scrapers")
     parser.add_argument("--source", action="append", help="run only this source (repeatable)")
@@ -97,10 +111,18 @@ def main(argv: list[str] | None = None) -> int:
         help="run sources and print a summary without writing to the DB",
     )
     parser.add_argument("--database-url", help="Postgres URL (default: $DATABASE_URL)")
+    parser.add_argument(
+        "--backfill",
+        action="store_true",
+        help="recompute role and dup_key for all stored jobs (no scraping), then exit",
+    )
     parser.add_argument("--sample", type=int, default=3, help="sample jobs to print per source")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+
+    if args.backfill:
+        return _backfill(args.database_url or os.environ.get("DATABASE_URL"))
 
     try:
         sources = get_sources(args.source)

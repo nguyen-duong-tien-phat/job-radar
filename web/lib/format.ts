@@ -40,5 +40,28 @@ export function formatSalaryRange(
 }
 
 export function formatDate(value: Date, locale: Locale): string {
-  return new Intl.DateTimeFormat(formatLocale(locale), { dateStyle: "medium" }).format(value);
+  return new Intl.DateTimeFormat(formatLocale(locale), { dateStyle: "medium", timeZone: "UTC" }).format(value);
+}
+
+/** Axis label for a chart bucket start date (`YYYY-MM-DD`): "27 Nov" or "Nov 2026" for months. */
+export function formatBucket(day: string, unit: "day" | "week" | "month", locale: Locale): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  const options: Intl.DateTimeFormatOptions =
+    unit === "month"
+      ? { month: "short", year: "numeric", timeZone: "UTC" }
+      : { day: "numeric", month: "short", timeZone: "UTC" };
+  return new Intl.DateTimeFormat(formatLocale(locale), options).format(date);
+}
+
+/** Round a chart maximum up to 1, 2, 5 or 10 times a power of ten, for tidy axis ticks. */
+export function niceMax(value: number): number {
+  if (value <= 1) return 1;
+  const power = 10 ** Math.floor(Math.log10(value));
+  const fraction = value / power;
+  return (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10) * power;
+}
+
+/** Format a `YYYY-MM-DD` filter date for display. */
+export function formatDay(day: string, locale: Locale): string {
+  return formatDate(new Date(`${day}T00:00:00Z`), locale);
 }

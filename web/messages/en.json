@@ -30,19 +30,30 @@
     "firstSeen": "First seen",
     "openOriginal": "Open original posting",
     "perYear": "/ year",
-    "back": "Back to overview"
+    "back": "Back to overview",
+    "posted": "Posted",
+    "role": "Role"
   },
   "overview": {
-    "activeJobs": "Active jobs",
-    "activeJobsHint": "Seen in the last {days} days",
+    "activeJobs": "Postings",
+    "activeJobsHint": "Posted {from} to {to}",
     "techJobs": "Jobs with a known skill",
     "withSalary": "With usable salary",
     "sources": "Sources",
     "topSkills": "Top skills",
     "topSkillsHint": "Share of jobs that mention at least one known skill",
-    "trend": "New jobs seen per day",
-    "trendHint": "Last 30 days. Counts when a job was first seen by the scraper, not when it was posted.",
-    "bySource": "Jobs by source"
+    "trend": "Postings over time",
+    "trendHint": "By posting date. A site that gives no date uses the day we first saw the job.",
+    "bySource": "Jobs by source",
+    "dedupe": "Postings listed on several sites are counted once.",
+    "roleShare": "Postings by role",
+    "roleShareHint": "Jobs with a known skill, grouped by job title",
+    "skillTrend": "Top skills over time",
+    "skillTrendHint": "Postings per period that mention each of the five most requested skills",
+    "regionSplit": "By region",
+    "centerJobs": "jobs",
+    "roleSalary": "Salary by role",
+    "roleSalaryHint": "Annualized. The bar spans the 25th to 75th percentile and the tick is the median. Monthly salaries are multiplied by 12; currencies are never converted."
   },
   "skill": {
     "notFound": "Skill not found",
@@ -50,17 +61,21 @@
     "salaryTitle": "Salary (annualized)",
     "salaryHint": "Median and quartiles of the midpoint of each posted range. Monthly salaries are multiplied by 12. Currencies are never converted.",
     "coverage": "{n} of {total} postings have a usable salary ({pct}%)",
-    "latest": "Latest postings"
+    "latest": "Latest postings",
+    "rolesTitle": "Roles asking for this skill"
   },
   "salary": {
     "title": "Salary by skill",
-    "intro": "Annualized salary per skill and currency. Only skills with at least {min} salary postings are shown. Monthly salaries are multiplied by 12 and currencies are never converted.",
+    "intro": "Annualized salary per role and per skill, by currency. Only groups with at least {min} salary postings are shown. Monthly salaries are multiplied by 12 and currencies are never converted.",
     "skill": "Skill",
     "postings": "Postings",
     "p25": "25th pct",
     "median": "Median",
     "p75": "75th pct",
-    "coverage": "Overall: {n} of {total} active postings have a usable salary ({pct}%)."
+    "coverage": "Overall: {n} of {total} active postings have a usable salary ({pct}%).",
+    "byRole": "By role",
+    "bySkill": "By skill",
+    "rangeHint": "Annualized. The bar spans the 25th to 75th percentile and the tick is the median."
   },
   "footer": {
     "sources": "Data sources",
@@ -68,5 +83,33 @@
   },
   "theme": {
     "toggle": "Switch between light and dark theme"
+  },
+  "range": {
+    "label": "Date range",
+    "7d": "1W",
+    "30d": "1M",
+    "90d": "3M",
+    "1y": "1Y",
+    "custom": "Custom",
+    "from": "From",
+    "to": "To"
+  },
+  "roleNames": {
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "fullstack": "Full-stack",
+    "devops": "DevOps / Cloud",
+    "data": "Data",
+    "ai-ml": "AI / ML",
+    "mobile": "Mobile",
+    "qa": "QA / Testing",
+    "security": "Security",
+    "embedded": "Embedded",
+    "management": "Management",
+    "software": "Software (general)",
+    "other": "Other"
+  },
+  "roles": {
+    "more": "Other roles"
   }
 }
