@@ -7,6 +7,8 @@ export const SOURCE_INFO: Record<string, { name: string; url: string }> = {
   hn_hiring: { name: "Hacker News: Who is hiring?", url: "https://news.ycombinator.com" },
   topdev: { name: "TopDev", url: "https://topdev.vn" },
   careerviet: { name: "CareerViet", url: "https://careerviet.vn" },
+  vieclam24h: { name: "Vieclam24h", url: "https://vieclam24h.vn" },
+  careerlink: { name: "CareerLink", url: "https://www.careerlink.vn" },
 };
 
 export function sourceInfo(source: string): { name: string; url: string } {

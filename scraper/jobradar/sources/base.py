@@ -14,6 +14,8 @@ class Source(ABC):
     region: str  # "vn" | "intl"
     # True for general (non-IT) boards: run.py then drops jobs where no known skill is found.
     require_skills: bool = False
+    # Minimum seconds between two requests to the site. Raise it for sites that throttle.
+    min_interval: float = 1.0
 
     @abstractmethod
     def fetch(self, http: HttpClient) -> Iterable[RawJob]:

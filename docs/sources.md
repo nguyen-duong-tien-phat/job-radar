@@ -20,21 +20,30 @@ Status values: **implemented** (adapter + tests in `scraper/jobradar/sources/`),
 
 ## Vietnam (vn)
 
-| Source | Status | robots | Findings | Notes |
+Checked and updated 2026-11-27. Every readable site publishes schema.org `JobPosting` JSON-LD on its job pages, found through the sitemap its robots.txt advertises. For a general board, a keyword or category filter picks technical jobs before any page is downloaded, then `require_skills` drops what still has no known skill.
+
+| Source | Status | robots | How it is read | Notes |
 |---|---|---|---|---|
-| **TopDev** | implemented | `Allow: /`; blocks login, `/oauth2`, `/td/v2/users`, ... | `/jobs/search?page=N` lists job links; each `/detail-jobs/...` page has schema.org `JobPosting` JSON-LD (title, date, skills, salary min/max/unit). The site API returns only a stub without authentication, so it is not used | ToS **not reviewed**. The listing mixes in non-IT jobs, so only jobs with a known skill are kept (about 14 of 45 per run). 3 pages per run, one detail request per job |
-| **ITviec** | blocked | `Allow: /` | Plain request returns 403 with a Cloudflare challenge | Not pursued: bypassing the challenge is out of bounds |
-| **TopCV** | blocked | Only personal CV pages blocked | Plain request returns 403 with a Cloudflare challenge | Not pursued, same reason |
-| **VietnamWorks** | todo | Only profile/apply pages blocked | The listing page is a Next.js app; its page data holds only a handful of featured jobs. The full search goes through an internal API that has not been examined | Needs a decision on whether using that internal API is acceptable |
-| **CareerViet** | implemented | No rule for generic bots (only specific crawlers are blocked) | The listing HTML has no job links (client-rendered), but robots.txt lists `sitemap/sitemap.xml`, which links `job_current_date.xml`: today's postings (about 300 Vietnamese URLs, all industries). Each job page has a `job-posting-schema` JSON-LD block (title, date, skills, salary range, company, location) in the first ~100 KB of a ~1.5 MB page, so the adapter stops reading right after it | ToS **not reviewed**. A URL-slug keyword filter picks ~30 technical-looking titles per day, then `require_skills` keeps ~8. The sitemap only holds the current day, so data builds up over daily runs |
+| **Vieclam24h** | implemented | `Disallow` only for admin, account and `?q` search URLs | `sitemap-index.xml` -> `daily/job-*.xml` -> `job/tintuyendung-N.xml` (about 5,000 URLs each, all industries). The industry is the first path segment, so only `it-phan-mem` and `it-phan-cung-mang` URLs are fetched, newest id first, up to 120 per run | ToS **not reviewed**. Returns **403 when a page request prefers JSON over HTML**, so job pages are requested with an HTML `Accept` header. 40 of 47 stored jobs have a salary range |
+| **TopDev** | implemented | `Allow: /`; blocks login, `/oauth2`, `/td/v2/users`, ... | `/jobs/search` (2 generic pages plus one page for each of 9 technical keywords), then each `/detail-jobs/...` page's JSON-LD. Up to 100 jobs per run, 1.5 s between requests | ToS **not reviewed**. The site's own API returns only a stub without authentication, so it is not used. The `Yeti` bot is blocked |
+| **CareerViet** | implemented | No rule for generic bots | `sitemap/sitemap.xml` -> `job_current_date.xml` (today's ~300 Vietnamese URLs); URL-slug keyword filter; read only the first ~100 KB of each ~1.5 MB page | ToS **not reviewed**. The sitemap only holds the current day, so data builds up over daily runs |
+| **CareerLink** | implemented, **throttled** | Disallows only account areas | `sitemaps/sitemap.xml.gz` -> gzipped sitemaps (active job URLs, all industries); slug keyword filter; highest ids first, up to 40 per run, 2 s between requests | ToS **not reviewed**. After a burst of ~120 pages at 1 request/second the site began returning a generic empty page (no job data) even for jobs it had served minutes before. The run now stops after 5 empty pages in a row and is paced at 2 s. Some postings label USD amounts as VND, which normalization discards |
+| **ITviec** | blocked | `Allow: /` | Plain request returns 403 with a Cloudflare challenge, for pages and sitemap | Not pursued: bypassing the challenge is out of bounds |
+| **TopCV** | blocked | Only personal CV pages blocked | Same Cloudflare 403 | Not pursued |
+| **JobsGO** | blocked | Sitemap advertised | `sitemap.xml` returns 403 | Not pursued |
+| **Glints** | blocked | Sitemap advertised | `sitemap_index.xml` returns a ~1 MB 403 challenge page | Not pursued |
+| **VietnamWorks** | not read | Only profile/apply pages blocked | Sitemap lists 8,233 job URLs, but a job page has no JSON-LD and no `__NEXT_DATA__`: the data is loaded through an internal API that has not been examined | Needs a decision on whether using that internal API is acceptable, and a read of the terms |
+| **Timviec365** | not readable | Everything allowed | Job sitemaps exist, but a job page has no JSON-LD (HTML only) | HTML scraping would be fragile; skipped |
+| **MyWork** | not readable | `Allow: /` | No sitemap, and the home page exposes no job links to follow | Skipped |
+| **Joboko** | unreachable | n/a | `robots.txt` request timed out | Skipped |
 
 ## Not yet checked
 
-- Terms of service for We Work Remotely, HN Algolia, TopDev, CareerViet, VietnamWorks, Adzuna.
+- Terms of service for We Work Remotely, HN Algolia, TopDev, CareerViet, Vieclam24h, CareerLink, VietnamWorks, Adzuna.
 - These need a manual read before the daily schedule is turned on. This is not legal advice.
 
 ## Impact on design
 
 - The dashboard shows the source name and a link to each job's original `url`. RemoteOK and Arbeitnow require this explicitly.
 - Every job stores `source` and the original `url`, so attribution works for every source.
-- `Source.require_skills = True` marks general boards (Arbeitnow, HN, TopDev, CareerViet): jobs without any known skill are dropped before saving.
+- `Source.require_skills = True` marks general boards (Arbeitnow, HN, TopDev, CareerViet, Vieclam24h, CareerLink): jobs without any known skill are dropped before saving.

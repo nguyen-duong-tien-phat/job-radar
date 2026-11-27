@@ -16,7 +16,7 @@ Scrapes IT job postings every day from Vietnamese and international job boards, 
 
 ## Highlights
 
-- **Six sources, two regions.** RemoteOK, We Work Remotely, Arbeitnow and Hacker News "Who is hiring?" for international jobs, TopDev and CareerViet for Vietnam. Adding a source means adding one file.
+- **Eight sources, two regions.** RemoteOK, We Work Remotely, Arbeitnow and Hacker News "Who is hiring?" for international jobs; TopDev, CareerViet, Vieclam24h and CareerLink for Vietnam. Adding a source means adding one file.
 - **Skills and salaries out of free text.** A 72-skill dictionary and a salary parser that reads `25-35 triệu`, `1.500 - 2.000 USD/tháng` and `$120–150k`.
 - **Safe to re-run.** Postings are de-duplicated and keep their first-seen and last-seen dates, so a daily run never creates duplicates.
 - **Built to the sites' rules.** Every source was checked against its robots.txt and terms first. Sources that forbid or block automated access were left out, not worked around.
@@ -42,7 +42,7 @@ flowchart LR
   C[Arbeitnow API] --> S
   D[HN Algolia API] --> S
   E[TopDev pages] --> S
-  F[CareerViet sitemap and pages] --> S
+  F[CareerViet, Vieclam24h, CareerLink sitemaps and pages] --> S
   CRON[GitHub Actions daily cron] --> S
   S --> DB[(PostgreSQL)]
   DB --> W[Next.js dashboard]
@@ -65,8 +65,8 @@ The scraper fetches each source, normalizes postings, extracts skills and salary
 
 Numbers from one local run on 2026-11-27, against a development database:
 
-- 507 postings stored from 6 sources; 489 distinct after merging duplicates. In the last month: 483 postings, 395 with a known skill, 71 with a usable salary. Only one posting so far appears on two sites, so cross-site merging mostly protects future growth.
-- 145 automated tests in the scraper (parsers, adapters against real saved responses, storage against a real Postgres) pass, and `ruff` reports no issues.
+- 590 postings stored from 8 sources; 570 distinct after merging duplicates, 102 of them Vietnamese (up from 22 before the new Vietnamese sources, but still far thinner than the international side). In the last 30 days: 563 postings, 475 with a known skill, 119 with a usable salary. Only one posting so far appears on two sites, so cross-site merging mostly protects future growth.
+- 167 automated tests in the scraper (parsers, adapters against real saved responses, storage against a real Postgres) pass, and `ruff` reports no issues.
 - The dashboard is verified in a browser on desktop and 375 px mobile, in both themes and both languages.
 
 TODO: add production numbers (postings per week, days of history) once the daily job has been running for a while.
@@ -85,7 +85,7 @@ npm install && npm run dev                 # http://localhost:3000
 ## Roadmap
 
 - [ ] Deploy: Neon, a GitHub secret and Vercel ([docs/deploy.md](docs/deploy.md))
-- [ ] More Vietnamese sources (VietnamWorks serves job data through an internal API; ITviec and TopCV block automated clients)
+- [ ] VietnamWorks (job data comes from an internal API). ITviec, TopCV, JobsGO and Glints block automated clients and are left out
 - [ ] Read the terms of the remaining sources before scheduling them
 - [ ] Skill trends over time, once there are weeks of data
 

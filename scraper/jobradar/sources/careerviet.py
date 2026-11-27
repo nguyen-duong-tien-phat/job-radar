@@ -25,6 +25,7 @@ from defusedxml import ElementTree
 from jobradar.http import HttpClient
 from jobradar.models import RawJob
 from jobradar.sources.base import Source
+from jobradar.sources.techslug import slug_looks_technical
 
 log = logging.getLogger("jobradar.careerviet")
 
@@ -38,18 +39,6 @@ _SCHEMA = re.compile(
 _JOB_ID = re.compile(r"\.([0-9A-Fa-f]+)\.html$")
 _UNIT_TO_PERIOD = {"YEAR": "year", "MONTH": "month", "HOUR": "hour"}
 
-# Words in a URL slug (hyphen separated) that suggest a technical job. Deliberately broad:
-# false positives cost one request and are dropped later by `require_skills`.
-_IT_WORDS = (
-    "developer|dev|engineer|programmer|lap-trinh|it|cntt|devops|data|qa|tester|test|automation|"
-    "java|python|php|net|dotnet|react|reactjs|node|nodejs|angular|vue|android|ios|mobile|flutter|"
-    "frontend|front|backend|back|fullstack|full|software|phan-mem|he-thong|system|network|mang|"
-    "security|bao-mat|cyber|ai|ml|machine|cloud|aws|azure|database|dba|sql|golang|embedded|"
-    "firmware|sap|erp|odoo|salesforce|ba|analyst|technical|helpdesk|blockchain|unity|game|web"
-)
-_IT_SLUG = re.compile(rf"(?:^|-)(?:{_IT_WORDS})(?:-|$)")
-
-
 def extract_vi_job_urls(sitemap_xml: bytes) -> list[str]:
     """Vietnamese job page URLs from the sitemap, in order, without duplicates."""
     root = ElementTree.fromstring(sitemap_xml)
@@ -62,8 +51,7 @@ def extract_vi_job_urls(sitemap_xml: bytes) -> list[str]:
 
 
 def looks_technical(url: str) -> bool:
-    slug = url.rsplit("/", 1)[-1].split(".", 1)[0]
-    return bool(_IT_SLUG.search(slug))
+    return slug_looks_technical(url.rsplit("/", 1)[-1].split(".", 1)[0])
 
 
 def extract_job_posting(page_html: str) -> dict[str, Any] | None:

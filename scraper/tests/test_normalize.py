@@ -147,3 +147,24 @@ def test_normalize_sets_role_and_dup_key(extractor):
     job = normalize(_raw(title="Senior React Native Developer", company="Acme Inc."), extractor)
     assert job.role == "mobile"
     assert job.dup_key == make_dup_key("Acme", "Senior React Native Developer")
+
+
+def test_implausibly_small_vnd_salary_is_dropped(extractor):
+    job = normalize(
+        _raw(salary_min=1500, salary_max=2500, salary_currency="VND", salary_period="month"),
+        extractor,
+    )
+    assert (job.salary_min, job.salary_max, job.salary_currency, job.salary_period) == (
+        None,
+        None,
+        None,
+        None,
+    )
+
+
+def test_realistic_vnd_salary_is_kept(extractor):
+    job = normalize(
+        _raw(salary_min=15e6, salary_max=25e6, salary_currency="VND", salary_period="month"),
+        extractor,
+    )
+    assert (job.salary_min, job.salary_max) == (15e6, 25e6)

@@ -12,6 +12,8 @@ from collections.abc import Callable
 import httpx
 
 USER_AGENT = "job-radar/0.1"
+# Per-request headers for job pages: some sites answer 403 when a page request prefers JSON.
+HTML_HEADERS = {"Accept": "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8"}
 RETRY_STATUS = frozenset({429, 500, 502, 503, 504})
 
 

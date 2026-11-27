@@ -43,15 +43,15 @@ def _print_report(name: str, jobs: list[RawJob], sample: int) -> None:
 
 def _dry_run(sources: list[Source], sample: int) -> int:
     failed = False
-    with HttpClient() as http:
-        for source in sources:
-            try:
+    for source in sources:
+        try:
+            with HttpClient(min_interval=source.min_interval) as http:
                 jobs = list(source.fetch(http))
-            except Exception:
-                log.exception("source %s failed", source.name)
-                failed = True
-                continue
-            _print_report(source.name, jobs, sample)
+        except Exception:
+            log.exception("source %s failed", source.name)
+            failed = True
+            continue
+        _print_report(source.name, jobs, sample)
     return 1 if failed else 0
 
 
@@ -64,25 +64,25 @@ def _store_run(sources: list[Source], database_url: str) -> int:
             log.info("applied migration %s", version)
         store.sync_skills(conn, extractor.skills)
 
-        with HttpClient() as http:
-            for source in sources:
-                run_id = store.start_run(conn, source.name)
-                try:
+        for source in sources:
+            run_id = store.start_run(conn, source.name)
+            try:
+                with HttpClient(min_interval=source.min_interval) as http:
                     raw_jobs = list(source.fetch(http))
-                    jobs = [normalize(raw, extractor) for raw in raw_jobs]
-                    if source.require_skills:
-                        jobs = [job for job in jobs if job.skills]
-                    seen, new = store.save_jobs(conn, jobs, seen_at=datetime.now(UTC))
-                except Exception as exc:
-                    log.exception("source %s failed", source.name)
-                    store.finish_run(
-                        conn, run_id, status="error", error=f"{type(exc).__name__}: {exc}"
-                    )
-                    failed = True
-                    continue
-                status = "ok" if seen > 0 else "warning"
-                store.finish_run(conn, run_id, status=status, jobs_seen=seen, jobs_new=new)
-                print(f"[{source.name}] {status}: {seen} jobs seen, {new} new")
+                jobs = [normalize(raw, extractor) for raw in raw_jobs]
+                if source.require_skills:
+                    jobs = [job for job in jobs if job.skills]
+                seen, new = store.save_jobs(conn, jobs, seen_at=datetime.now(UTC))
+            except Exception as exc:
+                log.exception("source %s failed", source.name)
+                store.finish_run(
+                    conn, run_id, status="error", error=f"{type(exc).__name__}: {exc}"
+                )
+                failed = True
+                continue
+            status = "ok" if seen > 0 else "warning"
+            store.finish_run(conn, run_id, status=status, jobs_seen=seen, jobs_new=new)
+            print(f"[{source.name}] {status}: {seen} jobs seen, {new} new")
     finally:
         conn.close()
     return 1 if failed else 0

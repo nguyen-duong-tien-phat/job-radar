@@ -1,9 +1,11 @@
 from jobradar.sources.arbeitnow import ArbeitnowSource
 from jobradar.sources.base import Source
+from jobradar.sources.careerlink import CareerLinkSource
 from jobradar.sources.careerviet import CareerVietSource
 from jobradar.sources.hn_hiring import HNHiringSource
 from jobradar.sources.remoteok import RemoteOKSource
 from jobradar.sources.topdev import TopDevSource
+from jobradar.sources.vieclam24h import Vieclam24hSource
 from jobradar.sources.weworkremotely import WeWorkRemotelySource
 
 # To add a source: create a file in sources/, then add an instance here.
@@ -14,6 +16,8 @@ ALL_SOURCES: list[Source] = [
     HNHiringSource(),
     TopDevSource(),
     CareerVietSource(),
+    Vieclam24hSource(),
+    CareerLinkSource(),
 ]
 
 

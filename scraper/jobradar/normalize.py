@@ -14,6 +14,9 @@ from jobradar.extract.salary import parse_salary
 from jobradar.extract.skills import SkillExtractor
 from jobradar.models import RawJob
 
+# Below this a VND salary is almost certainly a mislabelled USD amount.
+MIN_PLAUSIBLE_VND = 100_000
+
 _TAG = re.compile(r"<[^>]+>")
 _BRACKETED = re.compile(r"[\(\[\{][^\)\]\}]*[\)\]\}]")
 _NON_ALNUM = re.compile(r"[^a-z0-9]+")
@@ -101,6 +104,13 @@ def normalize(raw: RawJob, extractor: SkillExtractor) -> NormalizedJob:
         if parsed is not None:
             salary_min, salary_max = parsed.min, parsed.max
             currency, period = parsed.currency, parsed.period
+
+    # Some sites label USD amounts as VND ("1,500-2,500 VND" for a senior engineer). No real
+    # monthly or yearly VND salary is this small, so drop it rather than distort VND statistics.
+    amounts = [v for v in (salary_min, salary_max) if v is not None]
+    top = max(amounts) if amounts else None
+    if currency == "VND" and top is not None and top < MIN_PLAUSIBLE_VND:
+        salary_min = salary_max = currency = period = None
 
     searchable = " ".join([raw.title, " ".join(raw.tags), html_to_text(raw.description_html)])
     skills = extractor.extract(searchable)

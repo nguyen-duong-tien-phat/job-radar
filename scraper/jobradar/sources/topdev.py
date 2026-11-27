@@ -16,7 +16,7 @@ from typing import Any
 
 import httpx
 
-from jobradar.http import HttpClient
+from jobradar.http import HTML_HEADERS, HttpClient
 from jobradar.models import RawJob
 from jobradar.sources.base import Source
 
@@ -24,7 +24,15 @@ log = logging.getLogger("jobradar.topdev")
 
 BASE_URL = "https://topdev.vn"
 LISTING_URL = BASE_URL + "/jobs/search"
-MAX_PAGES = 3  # about 15 jobs per page; keeps the daily run to ~1 minute at 1 request/second
+# Listing requests: the generic feed plus one page per technical keyword (about 15 jobs each).
+KEYWORDS = ("python", "java", "javascript", "devops", "data", "php", "react", "android", "qa")
+LISTING_REQUESTS: tuple[dict[str, object], ...] = (
+    {"page": 1},
+    {"page": 2},
+    *({"keyword": word, "page": 1} for word in KEYWORDS),
+)
+MAX_JOBS = 100  # job pages fetched per run
+MAX_CONSECUTIVE_MISSING = 5
 
 _DETAIL_HREF = re.compile(r'href="(/detail-jobs/[^"?#]+)')
 _LD_JSON = re.compile(r'<script type="application/ld\+json">(.*?)</script>', re.DOTALL)
@@ -63,24 +71,32 @@ class TopDevSource(Source):
     name = "topdev"
     region = "vn"
     require_skills = True
+    min_interval = 1.5
 
     def fetch(self, http: HttpClient) -> Iterable[RawJob]:
         paths: dict[str, None] = {}
-        for page in range(1, MAX_PAGES + 1):
-            listing = http.get(LISTING_URL, params={"page": page}).text
+        for params in LISTING_REQUESTS:
+            listing = http.get(LISTING_URL, params=params, headers=HTML_HEADERS).text
             for path in extract_job_links(listing):
                 paths.setdefault(path, None)
 
-        for path in paths:
+        missing = 0
+        for path in list(paths)[:MAX_JOBS]:
             url = BASE_URL + path
             try:
-                posting = extract_job_posting(http.get(url).text)
+                posting = extract_job_posting(http.get(url, headers=HTML_HEADERS).text)
             except httpx.HTTPError as exc:
                 log.warning("skipping %s: %s", url, exc)
                 continue
             if posting is None:
                 log.warning("skipping %s: no JobPosting data", url)
+                missing += 1
+                if missing >= MAX_CONSECUTIVE_MISSING:
+                    # The site is no longer serving job data to us (throttling): stop asking.
+                    log.warning("stopping: %d pages in a row had no job data", missing)
+                    return
                 continue
+            missing = 0
             yield self._to_raw(url, path, posting)
 
     def _to_raw(self, url: str, path: str, posting: dict[str, Any]) -> RawJob:

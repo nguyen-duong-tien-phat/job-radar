@@ -51,7 +51,7 @@ def test_extract_job_posting_returns_none_without_json_ld():
 
 
 def test_listing_pages_are_deduplicated(jobs):
-    # The mock serves the same listing for every page, so 3 pages still give 3 jobs
+    # The mock serves the same listing for every request, so many listings still give 3 jobs
     assert len(jobs) == 3
 
 
