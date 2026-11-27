@@ -1,0 +1,62 @@
+name: Daily scrape
+
+on:
+  schedule:
+    # 00:00 UTC = 07:00 in Vietnam. GitHub may start scheduled runs a few minutes late.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: "Space-separated source names to run (empty = the default list below)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry run: fetch and print, do not write to the database"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Never let two scrape runs overlap.
+concurrency:
+  group: daily-scrape
+  cancel-in-progress: false
+
+env:
+  # Sources whose terms were reviewed (see docs/sources.md). Add a source here only after
+  # its terms have been read manually. Candidates waiting for review: weworkremotely,
+  # hn_hiring, topdev.
+  DEFAULT_SOURCES: "remoteok arbeitnow"
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install dependencies
+        run: uv sync --locked --no-dev
+      - name: Run scrapers
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          INPUT_SOURCES: ${{ github.event.inputs.sources }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          sources="${INPUT_SOURCES:-$DEFAULT_SOURCES}"
+          args=()
+          for name in $sources; do
+            args+=(--source "$name")
+          done
+          if [ "$INPUT_DRY_RUN" = "true" ]; then
+            args+=(--dry-run)
+          elif [ -z "$DATABASE_URL" ]; then
+            echo "::error::Secret DATABASE_URL is not set"
+            exit 1
+          fi
+          # A source that errors makes run.py exit non-zero, which fails this job.
+          uv run python -m jobradar.run "${args[@]}"
