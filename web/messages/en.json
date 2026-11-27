@@ -75,7 +75,8 @@
     "coverage": "Overall: {n} of {total} active postings have a usable salary ({pct}%).",
     "byRole": "By role",
     "bySkill": "By skill",
-    "rangeHint": "Annualized. The bar spans the 25th to 75th percentile and the tick is the median."
+    "rangeHint": "Annualized. The bar spans the 25th to 75th percentile and the tick is the median.",
+    "n": "Postings"
   },
   "footer": {
     "sources": "Data sources",

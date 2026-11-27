@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { RangeBars, type RangeRow } from "@/components/charts";
+import { RangeBars, type RangeLabels, type RangeRow } from "@/components/charts";
 import { ContentSkeleton } from "@/components/Skeleton";
 import { Card } from "@/components/widgets";
 import { href } from "@/lib/filters";
@@ -23,14 +23,14 @@ function byCurrency(rows: (RangeRow & { currency: string })[]): Group[] {
   return [...groups].map(([currency, list]) => ({ currency, rows: list.sort((a, b) => b.median - a.median) }));
 }
 
-function Groups({ groups, empty }: { groups: Group[]; empty: string }) {
+function Groups({ groups, empty, labels }: { groups: Group[]; empty: string; labels: RangeLabels }) {
   if (groups.length === 0) return <p className="text-sm text-foreground/60">{empty}</p>;
   return (
     <div className="flex flex-col gap-6">
       {groups.map((g) => (
         <div key={g.currency}>
           <h3 className="mb-2 text-xs font-semibold text-foreground/60">{g.currency}</h3>
-          <RangeBars rows={g.rows} currency={g.currency} />
+          <RangeBars rows={g.rows} currency={g.currency} labels={labels} />
         </div>
       ))}
     </div>
@@ -40,6 +40,7 @@ function Groups({ groups, empty }: { groups: Group[]; empty: string }) {
 async function SalaryContent({ lang, dict, searchParams }: { lang: Locale; dict: Dictionary; searchParams: SearchParams }) {
   const f = await requestFilters(searchParams);
   const data = await getSalaryOverview(f);
+  const rangeLabels: RangeLabels = { p25: dict.salary.p25, median: dict.salary.median, p75: dict.salary.p75, n: dict.salary.n };
   const empty = fmt(dict.common.notEnough, { min: MIN_SALARY_SAMPLES });
 
   const roleGroups = byCurrency(
@@ -77,10 +78,10 @@ async function SalaryContent({ lang, dict, searchParams }: { lang: Locale; dict:
         })}
       </p>
       <Card index={0} title={dict.salary.byRole} hint={dict.salary.rangeHint}>
-        <Groups groups={roleGroups} empty={empty} />
+        <Groups groups={roleGroups} empty={empty} labels={rangeLabels} />
       </Card>
       <Card index={1} title={dict.salary.bySkill} hint={dict.salary.rangeHint}>
-        <Groups groups={skillGroups} empty={empty} />
+        <Groups groups={skillGroups} empty={empty} labels={rangeLabels} />
       </Card>
     </>
   );

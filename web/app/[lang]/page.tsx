@@ -41,6 +41,7 @@ async function OverviewContent({
     })),
     ...(rest > 0 ? [{ key: "more", label: dict.roles.more, value: rest }] : []),
   ];
+  const rangeLabels = { p25: dict.salary.p25, median: dict.salary.median, p75: dict.salary.p75, n: dict.salary.n };
   const salaryCurrencies = [...new Set(data.roleSalary.map((r) => r.currency))];
   const regionSlices: Slice[] = [
     { key: "vn", label: dict.region.vn, value: data.regions.vn },
@@ -78,7 +79,13 @@ async function OverviewContent({
       </div>
 
       <Card index={4} title={dict.overview.trend} hint={dict.overview.trendHint}>
-        <AreaChart points={data.trend} unit={unit} label={dict.overview.trend} lang={lang} />
+        <AreaChart
+          points={data.trend}
+          unit={unit}
+          label={dict.overview.trend}
+          seriesLabel={dict.overview.activeJobs}
+          lang={lang}
+        />
       </Card>
 
       <div className="grid gap-8 md:grid-cols-2">
@@ -133,6 +140,7 @@ async function OverviewContent({
               <h3 className="mb-2 text-xs font-semibold text-foreground/60">{currency}</h3>
               <RangeBars
                 currency={currency}
+                labels={rangeLabels}
                 rows={data.roleSalary
                   .filter((r) => r.currency === currency)
                   .map((r) => ({

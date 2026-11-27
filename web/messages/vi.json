@@ -75,7 +75,8 @@
     "coverage": "Tổng thể: {n} trên {total} tin đang tuyển có lương dùng được ({pct}%).",
     "byRole": "Theo vai trò",
     "bySkill": "Theo kỹ năng",
-    "rangeHint": "Quy về năm. Thanh trải từ phân vị 25 đến 75, vạch là trung vị."
+    "rangeHint": "Quy về năm. Thanh trải từ phân vị 25 đến 75, vạch là trung vị.",
+    "n": "Số tin"
   },
   "footer": {
     "sources": "Nguồn dữ liệu",

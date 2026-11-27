@@ -57,7 +57,13 @@ async function SkillContent({ params, searchParams }: PageProps<"/[lang]/skills/
       </Card>
 
       <Card index={3} title={dict.overview.trend} hint={dict.overview.trendHint}>
-        <AreaChart points={detail.trend} unit={unit} label={dict.overview.trend} lang={lang} />
+        <AreaChart
+          points={detail.trend}
+          unit={unit}
+          label={dict.overview.trend}
+          seriesLabel={dict.overview.activeJobs}
+          lang={lang}
+        />
       </Card>
 
       <Card index={4} title={dict.skill.rolesTitle}>
