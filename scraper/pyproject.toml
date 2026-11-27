@@ -1,0 +1,31 @@
+[project]
+name = "jobradar"
+version = "0.1.0"
+description = "Collects IT job postings from many sources and extracts skills and salaries"
+requires-python = ">=3.12"
+dependencies = [
+    "defusedxml>=0.7.1",
+    "httpx>=0.27",
+    "psycopg[binary]>=3.2",
+    "pyyaml>=6.0.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

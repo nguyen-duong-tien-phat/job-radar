@@ -1,0 +1,311 @@
+# Skill taxonomy for the skill extractor.
+#
+# - slug: stable id stored in the DB. Never rename a slug once data exists.
+# - aliases: lowercase strings, matched on word boundaries (case-insensitive).
+#
+# Ambiguous words are deliberately NOT aliases: "go" (as in "go to market"),
+# "r", "c" (would match inside "c++"), "express", "node", "rest", "ts", "js", "spark"
+# only as "apache spark". Add an alias only after checking it on real postings.
+
+skills:
+  # Languages
+  - slug: python
+    name: Python
+    category: language
+    aliases: [python, python3]
+  - slug: javascript
+    name: JavaScript
+    category: language
+    aliases: [javascript]
+  - slug: typescript
+    name: TypeScript
+    category: language
+    aliases: [typescript]
+  - slug: java
+    name: Java
+    category: language
+    aliases: [java]
+  - slug: kotlin
+    name: Kotlin
+    category: language
+    aliases: [kotlin]
+  - slug: scala
+    name: Scala
+    category: language
+    aliases: [scala]
+  - slug: golang
+    name: Go
+    category: language
+    aliases: [golang, go lang]
+  - slug: rust
+    name: Rust
+    category: language
+    aliases: [rust]
+  - slug: csharp
+    name: C#
+    category: language
+    aliases: [c#, csharp, c sharp]
+  - slug: cpp
+    name: C++
+    category: language
+    aliases: [c++, cpp]
+  - slug: ruby
+    name: Ruby
+    category: language
+    aliases: [ruby]
+  - slug: php
+    name: PHP
+    category: language
+    aliases: [php]
+  - slug: swift
+    name: Swift
+    category: language
+    aliases: [swift]
+  - slug: dart
+    name: Dart
+    category: language
+    aliases: [dart]
+  - slug: sql
+    name: SQL
+    category: language
+    aliases: [sql]
+  - slug: bash
+    name: Bash
+    category: language
+    aliases: [bash]
+
+  # Frontend
+  - slug: react
+    name: React
+    category: frontend
+    aliases: [react, reactjs, react.js]
+  - slug: nextjs
+    name: Next.js
+    category: frontend
+    aliases: [next.js, nextjs]
+  - slug: vue
+    name: Vue.js
+    category: frontend
+    aliases: [vue, vue.js, vuejs]
+  - slug: angular
+    name: Angular
+    category: frontend
+    aliases: [angular, angularjs]
+  - slug: svelte
+    name: Svelte
+    category: frontend
+    aliases: [svelte]
+  - slug: tailwind
+    name: Tailwind CSS
+    category: frontend
+    aliases: [tailwind, tailwindcss, tailwind css]
+  - slug: html-css
+    name: HTML/CSS
+    category: frontend
+    aliases: [html5, css3]
+  - slug: react-native
+    name: React Native
+    category: mobile
+    aliases: [react native]
+  - slug: flutter
+    name: Flutter
+    category: mobile
+    aliases: [flutter]
+
+  # Backend and frameworks
+  - slug: nodejs
+    name: Node.js
+    category: backend
+    aliases: [node.js, nodejs]
+  - slug: django
+    name: Django
+    category: backend
+    aliases: [django]
+  - slug: flask
+    name: Flask
+    category: backend
+    aliases: [flask]
+  - slug: fastapi
+    name: FastAPI
+    category: backend
+    aliases: [fastapi]
+  - slug: spring
+    name: Spring
+    category: backend
+    aliases: [spring boot, spring-boot, spring framework]
+  - slug: rails
+    name: Ruby on Rails
+    category: backend
+    aliases: [ruby on rails, rails]
+  - slug: laravel
+    name: Laravel
+    category: backend
+    aliases: [laravel]
+  - slug: dotnet
+    name: .NET
+    category: backend
+    aliases: [.net, dotnet, asp.net, asp.net core]
+  - slug: nestjs
+    name: NestJS
+    category: backend
+    aliases: [nestjs, nest.js]
+  - slug: express
+    name: Express.js
+    category: backend
+    aliases: [express.js, expressjs]
+  - slug: graphql
+    name: GraphQL
+    category: backend
+    aliases: [graphql]
+  - slug: grpc
+    name: gRPC
+    category: backend
+    aliases: [grpc]
+
+  # Data and databases
+  - slug: postgresql
+    name: PostgreSQL
+    category: database
+    aliases: [postgresql, postgres]
+  - slug: mysql
+    name: MySQL
+    category: database
+    aliases: [mysql]
+  - slug: mongodb
+    name: MongoDB
+    category: database
+    aliases: [mongodb, mongo db]
+  - slug: redis
+    name: Redis
+    category: database
+    aliases: [redis]
+  - slug: elasticsearch
+    name: Elasticsearch
+    category: database
+    aliases: [elasticsearch]
+  - slug: kafka
+    name: Kafka
+    category: data
+    aliases: [kafka, apache kafka]
+  - slug: spark
+    name: Apache Spark
+    category: data
+    aliases: [apache spark, pyspark]
+  - slug: airflow
+    name: Airflow
+    category: data
+    aliases: [airflow, apache airflow]
+  - slug: dbt
+    name: dbt
+    category: data
+    aliases: [dbt]
+  - slug: snowflake
+    name: Snowflake
+    category: data
+    aliases: [snowflake]
+  - slug: bigquery
+    name: BigQuery
+    category: data
+    aliases: [bigquery]
+  - slug: pandas
+    name: pandas
+    category: data
+    aliases: [pandas]
+
+  # AI / ML
+  - slug: machine-learning
+    name: Machine Learning
+    category: ai
+    aliases: [machine learning]
+  - slug: pytorch
+    name: PyTorch
+    category: ai
+    aliases: [pytorch]
+  - slug: tensorflow
+    name: TensorFlow
+    category: ai
+    aliases: [tensorflow]
+  - slug: llm
+    name: LLM
+    category: ai
+    aliases: [llm, llms, large language model, large language models]
+  - slug: langchain
+    name: LangChain
+    category: ai
+    aliases: [langchain]
+
+  # Cloud and DevOps
+  - slug: aws
+    name: AWS
+    category: cloud
+    aliases: [aws, amazon web services]
+  - slug: gcp
+    name: Google Cloud
+    category: cloud
+    aliases: [gcp, google cloud]
+  - slug: azure
+    name: Azure
+    category: cloud
+    aliases: [azure, microsoft azure]
+  - slug: docker
+    name: Docker
+    category: devops
+    aliases: [docker]
+  - slug: kubernetes
+    name: Kubernetes
+    category: devops
+    aliases: [kubernetes, k8s]
+  - slug: terraform
+    name: Terraform
+    category: devops
+    aliases: [terraform]
+  - slug: ansible
+    name: Ansible
+    category: devops
+    aliases: [ansible]
+  - slug: linux
+    name: Linux
+    category: devops
+    aliases: [linux]
+  - slug: nginx
+    name: Nginx
+    category: devops
+    aliases: [nginx]
+  - slug: git
+    name: Git
+    category: devops
+    aliases: [git]
+  - slug: github-actions
+    name: GitHub Actions
+    category: devops
+    aliases: [github actions]
+  - slug: gitlab-ci
+    name: GitLab CI
+    category: devops
+    aliases: [gitlab ci]
+  - slug: cicd
+    name: CI/CD
+    category: devops
+    aliases: [ci/cd, cicd]
+  - slug: prometheus
+    name: Prometheus
+    category: devops
+    aliases: [prometheus]
+  - slug: grafana
+    name: Grafana
+    category: devops
+    aliases: [grafana]
+
+  # Mobile and design tools
+  - slug: android
+    name: Android
+    category: mobile
+    aliases: [android]
+  - slug: ios
+    name: iOS
+    category: mobile
+    aliases: [ios]
+  - slug: figma
+    name: Figma
+    category: design
+    aliases: [figma]
