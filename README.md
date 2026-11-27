@@ -16,7 +16,7 @@ Scrapes IT job postings every day from Vietnamese and international job boards, 
 
 ## Highlights
 
-- **Five sources, two regions.** RemoteOK, We Work Remotely, Arbeitnow and Hacker News "Who is hiring?" for international jobs, TopDev for Vietnam. Adding a source means adding one file.
+- **Six sources, two regions.** RemoteOK, We Work Remotely, Arbeitnow and Hacker News "Who is hiring?" for international jobs, TopDev and CareerViet for Vietnam. Adding a source means adding one file.
 - **Skills and salaries out of free text.** A 72-skill dictionary and a salary parser that reads `25-35 triệu`, `1.500 - 2.000 USD/tháng` and `$120–150k`.
 - **Safe to re-run.** Postings are de-duplicated and keep their first-seen and last-seen dates, so a daily run never creates duplicates.
 - **Built to the sites' rules.** Every source was checked against its robots.txt and terms first. Sources that forbid or block automated access were left out, not worked around.
@@ -40,6 +40,7 @@ flowchart LR
   C[Arbeitnow API] --> S
   D[HN Algolia API] --> S
   E[TopDev pages] --> S
+  F[CareerViet sitemap and pages] --> S
   CRON[GitHub Actions daily cron] --> S
   S --> DB[(PostgreSQL)]
   DB --> W[Next.js dashboard]
@@ -50,7 +51,7 @@ The scraper fetches each source, normalizes postings, extracts skills and salary
 
 ## Technical challenges
 
-**Scraping within the rules.** Before writing an adapter I read each site's robots.txt and terms and recorded the result in [docs/sources.md](docs/sources.md). Remotive's robots.txt forbids its own API, so it is excluded. ITviec and TopCV answer automated requests with a Cloudflare challenge, so I did not use them. The daily workflow only runs sources whose terms were reviewed, and the dashboard links every job back to its source, which RemoteOK and Arbeitnow require.
+**Scraping within the rules.** Before writing an adapter I read each site's robots.txt and terms and recorded the result in [docs/sources.md](docs/sources.md). Remotive's robots.txt forbids its own API, so it is excluded. ITviec and TopCV answer automated requests with a Cloudflare challenge, so I did not use them. For CareerViet I used the sitemap its robots.txt advertises and read only the first ~100 KB of each page, about 6% of its size. The daily workflow only runs sources whose terms were reviewed, and the dashboard links every job back to its source, which RemoteOK and Arbeitnow require.
 
 **Salaries are messy.** Vietnamese posts write `1.500` for 1,500 while English posts write `1.5k`, ranges mix units (`$120–150k`), and posts contain stray numbers (`10 open roles | $100k`). The parser treats a separator as a thousands mark only when exactly three digits follow it, carries a unit across a range, and discards numbers that are far smaller than the real amount. Monthly pay is annualized, and currencies are never converted.
 
@@ -62,8 +63,8 @@ The scraper fetches each source, normalizes postings, extracts skills and salary
 
 Numbers from one local run on 2026-11-27, against a development database:
 
-- 499 active postings from 5 sources; 405 mention at least one known skill; 68 include a usable salary.
-- 86 automated tests in the scraper (parsers, adapters against real saved responses, storage against a real Postgres) pass, and `ruff` reports no issues.
+- 499 active postings from the first 5 sources (CareerViet was added afterwards); 405 mention at least one known skill; 68 include a usable salary.
+- 100 automated tests in the scraper (parsers, adapters against real saved responses, storage against a real Postgres) pass, and `ruff` reports no issues.
 - The dashboard is verified in a browser on desktop and 375 px mobile, in both themes and both languages.
 
 TODO: add production numbers (postings per week, days of history) once the daily job has been running for a while.
@@ -82,7 +83,7 @@ npm install && npm run dev                 # http://localhost:3000
 ## Roadmap
 
 - [ ] Deploy: Neon, a GitHub secret and Vercel ([docs/deploy.md](docs/deploy.md))
-- [ ] More Vietnamese sources (VietnamWorks and CareerViet still to examine)
+- [ ] More Vietnamese sources (VietnamWorks serves job data through an internal API; ITviec and TopCV block automated clients)
 - [ ] Read the terms of the remaining sources before scheduling them
 - [ ] Skill trends over time, once there are weeks of data
 

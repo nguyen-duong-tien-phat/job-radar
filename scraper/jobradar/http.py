@@ -41,6 +41,17 @@ class HostRateLimiter:
         self._last[host] = now
 
 
+def _read_until(resp: httpx.Response, start: str, end: str, max_bytes: int) -> str:
+    start_b, end_b = start.encode(), end.encode()
+    buffer = b""
+    for chunk in resp.iter_bytes():
+        buffer += chunk
+        found = buffer.find(start_b)
+        if (found >= 0 and buffer.find(end_b, found) >= 0) or len(buffer) >= max_bytes:
+            break
+    return buffer.decode("utf-8", errors="replace")
+
+
 class HttpClient:
     def __init__(
         self,
@@ -85,6 +96,36 @@ class HttpClient:
                     request=resp.request,
                     response=resp,
                 )
+            if attempt < self._retries:
+                self._sleep(self._backoff**attempt)
+        assert last_error is not None
+        raise last_error
+
+    def get_prefix(
+        self, url: str, *, start: str, end: str, max_bytes: int = 400_000, **kwargs: object
+    ) -> str:
+        """GET a page but stop reading once `end` appears after `start`.
+
+        For heavy pages whose useful data sits near the top (a 1.5 MB page with a 4 KB JSON-LD
+        block): only the needed prefix is downloaded. Reading also stops at `max_bytes`.
+        Same rate limit, retry and error rules as `get`.
+        """
+        host = httpx.URL(url).host
+        last_error: Exception | None = None
+        for attempt in range(self._retries + 1):
+            self._limiter.wait(host)
+            try:
+                with self._client.stream("GET", url, **kwargs) as resp:  # type: ignore[arg-type]
+                    if resp.status_code not in RETRY_STATUS:
+                        resp.raise_for_status()
+                        return _read_until(resp, start, end, max_bytes)
+                    last_error = httpx.HTTPStatusError(
+                        f"HTTP {resp.status_code} from {host}",
+                        request=resp.request,
+                        response=resp,
+                    )
+            except httpx.TransportError as exc:
+                last_error = exc
             if attempt < self._retries:
                 self._sleep(self._backoff**attempt)
         assert last_error is not None

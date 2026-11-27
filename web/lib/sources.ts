@@ -6,6 +6,7 @@ export const SOURCE_INFO: Record<string, { name: string; url: string }> = {
   weworkremotely: { name: "We Work Remotely", url: "https://weworkremotely.com" },
   hn_hiring: { name: "Hacker News: Who is hiring?", url: "https://news.ycombinator.com" },
   topdev: { name: "TopDev", url: "https://topdev.vn" },
+  careerviet: { name: "CareerViet", url: "https://careerviet.vn" },
 };
 
 export function sourceInfo(source: string): { name: string; url: string } {

@@ -26,15 +26,15 @@ Status values: **implemented** (adapter + tests in `scraper/jobradar/sources/`),
 | **ITviec** | blocked | `Allow: /` | Plain request returns 403 with a Cloudflare challenge | Not pursued: bypassing the challenge is out of bounds |
 | **TopCV** | blocked | Only personal CV pages blocked | Plain request returns 403 with a Cloudflare challenge | Not pursued, same reason |
 | **VietnamWorks** | todo | Only profile/apply pages blocked | The listing page is a Next.js app; its page data holds only a handful of featured jobs. The full search goes through an internal API that has not been examined | Needs a decision on whether using that internal API is acceptable |
-| **CareerViet** | todo | No rule for generic bots | The listing HTML contains no job links (rendered client-side) | Needs a closer look |
+| **CareerViet** | implemented | No rule for generic bots (only specific crawlers are blocked) | The listing HTML has no job links (client-rendered), but robots.txt lists `sitemap/sitemap.xml`, which links `job_current_date.xml`: today's postings (about 300 Vietnamese URLs, all industries). Each job page has a `job-posting-schema` JSON-LD block (title, date, skills, salary range, company, location) in the first ~100 KB of a ~1.5 MB page, so the adapter stops reading right after it | ToS **not reviewed**. A URL-slug keyword filter picks ~30 technical-looking titles per day, then `require_skills` keeps ~8. The sitemap only holds the current day, so data builds up over daily runs |
 
 ## Not yet checked
 
-- Terms of service for We Work Remotely, HN Algolia, TopDev, VietnamWorks, CareerViet, Adzuna.
+- Terms of service for We Work Remotely, HN Algolia, TopDev, CareerViet, VietnamWorks, Adzuna.
 - These need a manual read before the daily schedule is turned on. This is not legal advice.
 
 ## Impact on design
 
 - The dashboard shows the source name and a link to each job's original `url`. RemoteOK and Arbeitnow require this explicitly.
 - Every job stores `source` and the original `url`, so attribution works for every source.
-- `Source.require_skills = True` marks general boards (Arbeitnow, HN, TopDev): jobs without any known skill are dropped before saving.
+- `Source.require_skills = True` marks general boards (Arbeitnow, HN, TopDev, CareerViet): jobs without any known skill are dropped before saving.

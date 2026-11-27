@@ -1,5 +1,6 @@
 from jobradar.sources.arbeitnow import ArbeitnowSource
 from jobradar.sources.base import Source
+from jobradar.sources.careerviet import CareerVietSource
 from jobradar.sources.hn_hiring import HNHiringSource
 from jobradar.sources.remoteok import RemoteOKSource
 from jobradar.sources.topdev import TopDevSource
@@ -12,6 +13,7 @@ ALL_SOURCES: list[Source] = [
     ArbeitnowSource(),
     HNHiringSource(),
     TopDevSource(),
+    CareerVietSource(),
 ]
 
 
