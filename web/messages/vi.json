@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "Job Radar",
+    "tagline": "Tin tuyển dụng IT mỗi ngày: kỹ năng đang hot và mức lương"
+  },
+  "nav": { "overview": "Tổng quan", "salary": "Mức lương" },
+  "region": { "label": "Khu vực", "all": "Tất cả", "vn": "Việt Nam", "intl": "Quốc tế" },
+  "language": { "label": "Ngôn ngữ", "en": "English", "vi": "Tiếng Việt" },
+  "common": {
+    "loading": "Đang tải…",
+    "noData": "Chưa có dữ liệu.",
+    "notEnough": "Chưa đủ dữ liệu lương (dưới {min} tin).",
+    "jobs": "việc làm",
+    "company": "Công ty",
+    "source": "Nguồn",
+    "title": "Vị trí",
+    "salary": "Lương",
+    "firstSeen": "Thấy lần đầu",
+    "openOriginal": "Mở tin gốc",
+    "perYear": "/ năm",
+    "back": "Về trang tổng quan"
+  },
+  "overview": {
+    "activeJobs": "Tin đang tuyển",
+    "activeJobsHint": "Thấy trong {days} ngày gần nhất",
+    "techJobs": "Tin có kỹ năng nhận diện được",
+    "withSalary": "Tin có lương dùng được",
+    "sources": "Nguồn",
+    "topSkills": "Kỹ năng hàng đầu",
+    "topSkillsHint": "Tỉ lệ tin nhắc tới ít nhất một kỹ năng đã biết",
+    "trend": "Tin mới thấy mỗi ngày",
+    "trendHint": "30 ngày gần nhất. Tính theo ngày scraper thấy tin lần đầu, không phải ngày đăng.",
+    "bySource": "Số tin theo nguồn"
+  },
+  "skill": {
+    "notFound": "Không tìm thấy kỹ năng",
+    "jobsMentioning": "Số tin nhắc tới kỹ năng này",
+    "salaryTitle": "Lương (quy về năm)",
+    "salaryHint": "Trung vị và tứ phân vị của điểm giữa mỗi khoảng lương. Lương theo tháng được nhân 12. Không bao giờ quy đổi tiền tệ.",
+    "coverage": "{n} trên {total} tin có lương dùng được ({pct}%)",
+    "latest": "Tin mới nhất"
+  },
+  "salary": {
+    "title": "Lương theo kỹ năng",
+    "intro": "Lương quy về năm theo từng kỹ năng và loại tiền. Chỉ hiển thị kỹ năng có ít nhất {min} tin có lương. Lương theo tháng được nhân 12, không quy đổi tiền tệ.",
+    "skill": "Kỹ năng",
+    "postings": "Số tin",
+    "p25": "Phân vị 25",
+    "median": "Trung vị",
+    "p75": "Phân vị 75",
+    "coverage": "Tổng thể: {n} trên {total} tin đang tuyển có lương dùng được ({pct}%)."
+  },
+  "footer": {
+    "sources": "Nguồn dữ liệu",
+    "note": "Tin tuyển dụng thuộc về trang gốc. Bấm vào liên kết để đọc và ứng tuyển tại đó."
+  }
+}

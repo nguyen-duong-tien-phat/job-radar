@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "Job Radar",
+    "tagline": "Daily IT job postings: hot skills and salaries"
+  },
+  "nav": { "overview": "Overview", "salary": "Salaries" },
+  "region": { "label": "Region", "all": "All", "vn": "Vietnam", "intl": "International" },
+  "language": { "label": "Language", "en": "English", "vi": "Tiếng Việt" },
+  "common": {
+    "loading": "Loading…",
+    "noData": "No data yet.",
+    "notEnough": "Not enough salary data (fewer than {min} postings).",
+    "jobs": "jobs",
+    "company": "Company",
+    "source": "Source",
+    "title": "Title",
+    "salary": "Salary",
+    "firstSeen": "First seen",
+    "openOriginal": "Open original posting",
+    "perYear": "/ year",
+    "back": "Back to overview"
+  },
+  "overview": {
+    "activeJobs": "Active jobs",
+    "activeJobsHint": "Seen in the last {days} days",
+    "techJobs": "Jobs with a known skill",
+    "withSalary": "With usable salary",
+    "sources": "Sources",
+    "topSkills": "Top skills",
+    "topSkillsHint": "Share of jobs that mention at least one known skill",
+    "trend": "New jobs seen per day",
+    "trendHint": "Last 30 days. Counts when a job was first seen by the scraper, not when it was posted.",
+    "bySource": "Jobs by source"
+  },
+  "skill": {
+    "notFound": "Skill not found",
+    "jobsMentioning": "Jobs mentioning this skill",
+    "salaryTitle": "Salary (annualized)",
+    "salaryHint": "Median and quartiles of the midpoint of each posted range. Monthly salaries are multiplied by 12. Currencies are never converted.",
+    "coverage": "{n} of {total} postings have a usable salary ({pct}%)",
+    "latest": "Latest postings"
+  },
+  "salary": {
+    "title": "Salary by skill",
+    "intro": "Annualized salary per skill and currency. Only skills with at least {min} salary postings are shown. Monthly salaries are multiplied by 12 and currencies are never converted.",
+    "skill": "Skill",
+    "postings": "Postings",
+    "p25": "25th pct",
+    "median": "Median",
+    "p75": "75th pct",
+    "coverage": "Overall: {n} of {total} active postings have a usable salary ({pct}%)."
+  },
+  "footer": {
+    "sources": "Data sources",
+    "note": "Postings belong to their original sites. Follow the links to read and apply there."
+  }
+}
