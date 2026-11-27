@@ -1,25 +1,159 @@
 @import "tailwindcss";
 
+/* Theme = a class on <html>. A tiny inline script in layout.tsx sets it before first paint. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --background: #f3efe6; /* warm paper */
+  --foreground: #1c1917; /* ink */
+  --surface: #fbf9f4;
+  --accent: #b8430f; /* terracotta, the only accent */
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #141210;
+  --foreground: #ece7dd;
+  --surface: #1c1916;
+  --accent: #e8814a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-accent: var(--accent);
   --font-sans: var(--font-inter);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-newsreader), Georgia, serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.4);
+  }
+  70% {
+    transform: rotate(8deg) scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Motion utilities. --i is the stagger index set inline. ---------- */
+.reveal {
+  animation: fade-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.grow-x {
+  transform-origin: left center;
+  animation: grow-x 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms + 250ms);
+}
+.grow-y {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: grow-y 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 20ms + 200ms);
+}
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--foreground) 6%, transparent) 30%,
+    color-mix(in oklab, var(--foreground) 14%, transparent) 50%,
+    color-mix(in oklab, var(--foreground) 6%, transparent) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+.theme-icon {
+  animation: pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.card {
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+  box-shadow: 0 10px 30px -14px color-mix(in oklab, var(--accent) 55%, transparent);
+}
+
+/* Fallback theme switch (browsers without View Transitions): fade colors briefly. */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    fill 0.35s ease,
+    stroke 0.35s ease !important;
+}
+
+/* Circular reveal: we animate the new snapshot ourselves, so turn off the default cross-fade. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .card:hover {
+    transform: none;
+  }
 }

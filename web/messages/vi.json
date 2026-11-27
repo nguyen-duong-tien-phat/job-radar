@@ -3,9 +3,21 @@
     "title": "Job Radar",
     "tagline": "Tin tuyển dụng IT mỗi ngày: kỹ năng đang hot và mức lương"
   },
-  "nav": { "overview": "Tổng quan", "salary": "Mức lương" },
-  "region": { "label": "Khu vực", "all": "Tất cả", "vn": "Việt Nam", "intl": "Quốc tế" },
-  "language": { "label": "Ngôn ngữ", "en": "English", "vi": "Tiếng Việt" },
+  "nav": {
+    "overview": "Tổng quan",
+    "salary": "Mức lương"
+  },
+  "region": {
+    "label": "Khu vực",
+    "all": "Tất cả",
+    "vn": "Việt Nam",
+    "intl": "Quốc tế"
+  },
+  "language": {
+    "label": "Ngôn ngữ",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  },
   "common": {
     "loading": "Đang tải…",
     "noData": "Chưa có dữ liệu.",
@@ -53,5 +65,8 @@
   "footer": {
     "sources": "Nguồn dữ liệu",
     "note": "Tin tuyển dụng thuộc về trang gốc. Bấm vào liên kết để đọc và ứng tuyển tại đó."
+  },
+  "theme": {
+    "toggle": "Chuyển giao diện sáng/tối"
   }
 }

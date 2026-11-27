@@ -7,17 +7,24 @@ import { fmt } from "@/lib/i18n";
 import type { DayCount, SalaryStats, SkillCount, SkillJob } from "@/lib/queries";
 import { sourceInfo } from "@/lib/sources";
 
+const stagger = (index: number) => ({ "--i": index }) as React.CSSProperties;
+
 export function Card({
   title,
   hint,
+  index = 0,
   children,
 }: {
   title: string;
   hint?: string;
+  index?: number;
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-foreground/10 p-4">
+    <section
+      className="card reveal rounded-xl border border-foreground/10 bg-surface p-4"
+      style={stagger(index)}
+    >
       <h2 className="text-base font-semibold">{title}</h2>
       {hint && <p className="mt-1 text-xs text-foreground/60">{hint}</p>}
       <div className="mt-4">{children}</div>
@@ -25,12 +32,27 @@ export function Card({
   );
 }
 
-export function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+export function StatCard({
+  label,
+  value,
+  hint,
+  index = 0,
+}: {
+  label: string;
+  value: React.ReactNode;
+  hint?: string;
+  index?: number;
+}) {
   return (
-    <div className="rounded-lg border border-foreground/10 p-4">
+    <div
+      className="card reveal rounded-xl border border-foreground/10 bg-surface p-4"
+      style={stagger(index)}
+    >
       <div className="text-sm text-foreground/60">{label}</div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums">{value}</div>
-      {hint && <div className="mt-1 text-xs text-foreground/50">{hint}</div>}
+      <div className="mt-1 font-display text-3xl font-medium tabular-nums">
+        {value}
+      </div>
+      {hint && <div className="mt-1 text-xs text-foreground/60">{hint}</div>}
     </div>
   );
 }
@@ -52,17 +74,17 @@ export function SkillBars({
   const max = Math.max(...skills.map((s) => s.jobs));
   return (
     <ol className="flex flex-col gap-2">
-      {skills.map((skill) => (
-        <li key={skill.slug}>
+      {skills.map((skill, i) => (
+        <li key={skill.slug} className="reveal" style={stagger(i)}>
           <Link
             href={href(lang, `/skills/${skill.slug}`, region)}
-            className="group grid grid-cols-[8rem_1fr_6.5rem] items-center gap-3 text-sm"
+            className="group -mx-2 grid grid-cols-[8rem_1fr_6.5rem] items-center gap-3 rounded-md px-2 py-1 text-sm transition-colors hover:bg-foreground/5"
           >
-            <span className="truncate group-hover:underline">{skill.name}</span>
+            <span className="truncate transition-colors group-hover:text-accent">{skill.name}</span>
             <span className="h-2 rounded-full bg-foreground/10" aria-hidden>
               <span
-                className="block h-2 rounded-full bg-foreground/70"
-                style={{ width: `${(skill.jobs / max) * 100}%` }}
+                className="grow-x block h-2 rounded-full bg-accent transition-[width,filter] duration-500 group-hover:brightness-110"
+                style={{ ...stagger(i), width: `${(skill.jobs / max) * 100}%` }}
               />
             </span>
             <span className="text-right tabular-nums text-foreground/70">
@@ -93,7 +115,8 @@ export function TrendChart({ points, label, lang }: { points: DayCount[]; label:
             width={barWidth}
             height={Math.max(h, p.jobs > 0 ? 1 : 0)}
             rx={1.5}
-            className="fill-foreground/70"
+            className="grow-y fill-accent transition-opacity hover:opacity-70"
+            style={stagger(i)}
           >
             <title>{`${p.day}: ${formatNumber(p.jobs, lang)}`}</title>
           </rect>
@@ -143,7 +166,7 @@ export function SalaryStatsList({
               <div key={label as string}>
                 <div className="text-xs text-foreground/60">{label as string}</div>
                 <div className="font-semibold tabular-nums">
-                  {formatMoney(value as number, s.currency, lang)}
+                  {formatMoney(value as number, s.currency)}
                 </div>
               </div>
             ))}
@@ -176,10 +199,9 @@ export function JobTable({ jobs, lang, dict }: { jobs: SkillJob[]; lang: Locale;
               job.salaryMax,
               job.salaryCurrency,
               job.salaryPeriod,
-              lang,
             );
             return (
-              <tr key={job.id} className="border-t border-foreground/10 align-top">
+              <tr key={job.id} className="border-t border-foreground/10 align-top transition-colors hover:bg-foreground/5">
                 <td className="py-2 pr-3">
                   <a
                     href={job.url}

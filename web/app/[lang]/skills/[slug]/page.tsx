@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { PageShell } from "@/components/PageShell";
+import { ContentSkeleton } from "@/components/Skeleton";
 import { Card, JobTable, SalaryStatsList, StatCard, TrendChart } from "@/components/widgets";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { fmt, getDictionary } from "@/lib/i18n";
@@ -20,7 +20,7 @@ async function SkillContent({ params, searchParams }: PageProps<"/[lang]/skills/
   if (!detail) notFound();
 
   return (
-    <PageShell lang={lang} dict={dict} path={`/skills/${slug}`} searchParams={searchParams}>
+    <>
       <div className="flex flex-col gap-1">
         <Link href={href(lang, "/", region)} className="text-sm text-foreground/60 hover:underline">
           ← {dict.common.back}
@@ -52,13 +52,15 @@ async function SkillContent({ params, searchParams }: PageProps<"/[lang]/skills/
       <Card title={dict.skill.latest}>
         <JobTable jobs={detail.latest} lang={lang} dict={dict} />
       </Card>
-    </PageShell>
+    </>
   );
 }
 
 export default function SkillPage(props: PageProps<"/[lang]/skills/[slug]">) {
   return (
-    <Suspense fallback={<div className="mx-auto w-full max-w-5xl px-4 py-8 text-sm text-foreground/60">…</div>}>
+    <Suspense
+      fallback={<ContentSkeleton label="…" />}
+    >
       <SkillContent {...props} />
     </Suspense>
   );

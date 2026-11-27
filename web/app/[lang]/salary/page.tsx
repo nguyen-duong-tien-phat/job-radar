@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { PageShell } from "@/components/PageShell";
+import { ContentSkeleton } from "@/components/Skeleton";
 import { Card } from "@/components/widgets";
 import { formatMoney, formatNumber, formatPercent } from "@/lib/format";
 import { type Dictionary, fmt, getDictionary } from "@/lib/i18n";
@@ -62,11 +62,11 @@ async function SalaryContent({
                       </Link>
                     </td>
                     <td className="py-2 pr-3 text-right">{formatNumber(row.n, lang)}</td>
-                    <td className="py-2 pr-3 text-right">{formatMoney(row.p25, currency, lang)}</td>
+                    <td className="py-2 pr-3 text-right">{formatMoney(row.p25, currency)}</td>
                     <td className="py-2 pr-3 text-right font-semibold">
-                      {formatMoney(row.median, currency, lang)}
+                      {formatMoney(row.median, currency)}
                     </td>
-                    <td className="py-2 text-right">{formatMoney(row.p75, currency, lang)}</td>
+                    <td className="py-2 text-right">{formatMoney(row.p75, currency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -84,11 +84,11 @@ export default async function SalaryPage({ params, searchParams }: PageProps<"/[
   const dict = await getDictionary(lang);
 
   return (
-    <PageShell lang={lang} dict={dict} path="/salary" searchParams={searchParams}>
+    <>
       <h1 className="text-xl font-semibold">{dict.salary.title}</h1>
-      <Suspense fallback={<p className="text-sm text-foreground/60">{dict.common.loading}</p>}>
+      <Suspense fallback={<ContentSkeleton label={dict.common.loading} />}>
         <SalaryContent lang={lang} dict={dict} searchParams={searchParams} />
       </Suspense>
-    </PageShell>
+    </>
   );
 }

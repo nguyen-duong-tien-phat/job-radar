@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { PageShell } from "@/components/PageShell";
+import { CountUp } from "@/components/CountUp";
+import { ContentSkeleton } from "@/components/Skeleton";
 import { Card, SkillBars, StatCard, TrendChart } from "@/components/widgets";
 import { formatNumber } from "@/lib/format";
 import { type Dictionary, fmt, getDictionary } from "@/lib/i18n";
-import { hasLocale, type Locale, parseRegion } from "@/lib/locales";
+import { formatLocale, hasLocale, type Locale, parseRegion } from "@/lib/locales";
 import { ACTIVE_DAYS, getOverview } from "@/lib/queries";
 import { sourceInfo } from "@/lib/sources";
 
@@ -27,24 +28,37 @@ async function OverviewContent({
     <>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard
+          index={0}
           label={dict.overview.activeJobs}
-          value={formatNumber(data.activeJobs, lang)}
+          value={<CountUp value={data.activeJobs} locale={formatLocale(lang)} />}
           hint={fmt(dict.overview.activeJobsHint, { days: ACTIVE_DAYS })}
         />
-        <StatCard label={dict.overview.techJobs} value={formatNumber(data.techJobs, lang)} />
-        <StatCard label={dict.overview.withSalary} value={formatNumber(data.salaryJobs, lang)} />
-        <StatCard label={dict.overview.sources} value={formatNumber(data.sources.length, lang)} />
+        <StatCard
+          index={1}
+          label={dict.overview.techJobs}
+          value={<CountUp value={data.techJobs} locale={formatLocale(lang)} />}
+        />
+        <StatCard
+          index={2}
+          label={dict.overview.withSalary}
+          value={<CountUp value={data.salaryJobs} locale={formatLocale(lang)} />}
+        />
+        <StatCard
+          index={3}
+          label={dict.overview.sources}
+          value={<CountUp value={data.sources.length} locale={formatLocale(lang)} />}
+        />
       </div>
 
-      <Card title={dict.overview.topSkills} hint={dict.overview.topSkillsHint}>
+      <Card index={4} title={dict.overview.topSkills} hint={dict.overview.topSkillsHint}>
         <SkillBars skills={data.topSkills} total={data.techJobs} lang={lang} region={region} dict={dict} />
       </Card>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <Card title={dict.overview.trend} hint={dict.overview.trendHint}>
+        <Card index={5} title={dict.overview.trend} hint={dict.overview.trendHint}>
           <TrendChart points={data.trend} label={dict.overview.trend} lang={lang} />
         </Card>
-        <Card title={dict.overview.bySource}>
+        <Card index={6} title={dict.overview.bySource}>
           <ul className="flex flex-col gap-2 text-sm">
             {data.sources.map((s) => (
               <li key={s.source} className="flex justify-between gap-3">
@@ -69,10 +83,10 @@ export default async function OverviewPage({ params, searchParams }: PageProps<"
   const dict = await getDictionary(lang);
 
   return (
-    <PageShell lang={lang} dict={dict} path="/" searchParams={searchParams}>
-      <Suspense fallback={<p className="text-sm text-foreground/60">{dict.common.loading}</p>}>
+    <>
+      <Suspense fallback={<ContentSkeleton label={dict.common.loading} />}>
         <OverviewContent lang={lang} dict={dict} searchParams={searchParams} />
       </Suspense>
-    </PageShell>
+    </>
   );
 }

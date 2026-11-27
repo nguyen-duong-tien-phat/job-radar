@@ -3,9 +3,21 @@
     "title": "Job Radar",
     "tagline": "Daily IT job postings: hot skills and salaries"
   },
-  "nav": { "overview": "Overview", "salary": "Salaries" },
-  "region": { "label": "Region", "all": "All", "vn": "Vietnam", "intl": "International" },
-  "language": { "label": "Language", "en": "English", "vi": "Tiếng Việt" },
+  "nav": {
+    "overview": "Overview",
+    "salary": "Salaries"
+  },
+  "region": {
+    "label": "Region",
+    "all": "All",
+    "vn": "Vietnam",
+    "intl": "International"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  },
   "common": {
     "loading": "Loading…",
     "noData": "No data yet.",
@@ -53,5 +65,8 @@
   "footer": {
     "sources": "Data sources",
     "note": "Postings belong to their original sites. Follow the links to read and apply there."
+  },
+  "theme": {
+    "toggle": "Switch between light and dark theme"
   }
 }

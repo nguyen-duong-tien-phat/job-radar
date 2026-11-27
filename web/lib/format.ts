@@ -13,7 +13,7 @@ export function formatPercent(part: number, whole: number): number {
  * Always formatted with en-US: Vietnamese compact notation ("200,0 N US$") is hard to read
  * for salaries, and the K/M style is what job boards use in both languages.
  */
-export function formatMoney(value: number, currency: string, _locale: Locale): string {
+export function formatMoney(value: number, currency: string): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
@@ -28,15 +28,14 @@ export function formatSalaryRange(
   max: number | null,
   currency: string | null,
   period: string | null,
-  locale: Locale,
 ): string | null {
   if (!currency || (min === null && max === null)) return null;
   const low = min ?? max!;
   const high = max ?? min!;
   const range =
     low === high
-      ? formatMoney(low, currency, locale)
-      : `${formatMoney(low, currency, locale)}–${formatMoney(high, currency, locale)}`;
+      ? formatMoney(low, currency)
+      : `${formatMoney(low, currency)}–${formatMoney(high, currency)}`;
   return period ? `${range} / ${period}` : range;
 }
 
