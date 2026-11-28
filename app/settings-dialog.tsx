@@ -45,10 +45,22 @@ function Row({
 }
 
 // section + h3 rather than fieldset + legend: Safari lays out a legend differently from Chrome.
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  hidden,
+  children,
+}: {
+  title: string;
+  hidden?: boolean;
+  children: ReactNode;
+}) {
   const id = `set-section-${title.toLowerCase().replace(/\W+/g, "-")}`;
   return (
-    <section aria-labelledby={id} className="border-t border-seam px-5 py-3">
+    <section
+      aria-labelledby={id}
+      hidden={hidden}
+      className="border-t border-seam px-5 py-3"
+    >
       <h3 id={id} className="caption mb-1 pt-1">
         {title}
       </h3>
@@ -72,6 +84,11 @@ export function SettingsDialog({
     maxJobs: s.maxJobs,
   });
   const estimate = estimateSearchTokens(limits);
+  // Fields that only matter for a choice are hidden (not removed, so their saved values still submit).
+  const [mode, setMode] = useState(s.mode);
+  const [claudeOn, setClaudeOn] = useState(
+    !s.disabledSources.includes("claude-search"),
+  );
   const [state, action, pending] = useActionState<SettingsState, FormData>(
     saveSettingsAction,
     { error: null, savedAt: null },
@@ -150,6 +167,8 @@ export function SettingsDialog({
           action={action}
           onChange={(e) => {
             const f = new FormData(e.currentTarget);
+            setMode(f.get("mode") === "auto" ? "auto" : "manual");
+            setClaudeOn(f.getAll("source").includes("claude-search"));
             setLimits({
               searches: Number(f.get("searches")) || 0,
               fetches: Number(f.get("fetches")) || 0,
@@ -185,7 +204,9 @@ export function SettingsDialog({
 
           {/* Columns follow the dialog's own width (container query), the same in every browser. */}
           <div className="@container">
-            <div className="grid @3xl:grid-cols-3 @3xl:divide-x @3xl:divide-seam">
+            <div
+              className={`grid @3xl:divide-x @3xl:divide-seam ${claudeOn ? "@3xl:grid-cols-3" : "@3xl:grid-cols-2"}`}
+            >
               <div>
                 <Section title="Appearance">
                   <Row label="Theme">
@@ -212,17 +233,21 @@ export function SettingsDialog({
                       s.mode,
                     )}
                   </Row>
-                  <Row label="Daily run time" htmlFor="set-runTime">
-                    <input
-                      id="set-runTime"
-                      name="runTime"
-                      type="time"
-                      required
-                      defaultValue={`${pad(s.runHour)}:${pad(s.runMinute)}`}
-                      className={`${field} w-28`}
-                    />
-                  </Row>
-                  {num("searchEveryDays", "Web search every (days)")}
+                  <div hidden={mode !== "auto"}>
+                    <Row label="Daily run time" htmlFor="set-runTime">
+                      <input
+                        id="set-runTime"
+                        name="runTime"
+                        type="time"
+                        required
+                        defaultValue={`${pad(s.runHour)}:${pad(s.runMinute)}`}
+                        className={`${field} w-28`}
+                      />
+                    </Row>
+                  </div>
+                  <div hidden={mode !== "auto" || !claudeOn}>
+                    {num("searchEveryDays", "Web search every (days)")}
+                  </div>
                 </Section>
               </div>
               <Section title="Sources">
@@ -264,7 +289,7 @@ export function SettingsDialog({
                   </p>
                 )}
               </Section>
-              <Section title="Claude web search">
+              <Section title="Claude web search" hidden={!claudeOn}>
                 <Row label="Model" htmlFor="set-model">
                   <select
                     id="set-model"

@@ -21,18 +21,22 @@ const list = (skills: string[], max = 5) => skills.slice(0, max).join(", ") + (s
 const pad = (n: number) => String(n).padStart(2, "0");
 
 /** Automatic mode: when the next run happens, instead of the "Find jobs" button. */
-function ScheduleInfo({ hour, minute, everyDays, installed }: { hour: number; minute: number; everyDays: number; installed: boolean }) {
+function ScheduleInfo({ hour, minute, everyDays, installed }: { hour: number; minute: number; everyDays: number | null; installed: boolean }) {
   if (!installed) {
     return <p className="text-sm text-alert">Schedule not installed</p>;
   }
   const day = nextRunDay(hour, minute);
   return (
-    <p className="flex h-9 items-center gap-1.5 rounded-md border border-seam-strong px-3 text-[13px] text-steel">
-      Next run {day}
+    <p className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-seam-strong px-3 text-[13px] whitespace-nowrap text-steel">
+      Auto {day}
       <span className="figure text-paper">
         {pad(hour)}:{pad(minute)}
       </span>
-      · web search every <span className="figure">{everyDays}</span>d
+      {everyDays !== null && (
+        <>
+          · Claude every <span className="figure">{everyDays}</span>d
+        </>
+      )}
     </p>
   );
 }
@@ -89,7 +93,7 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
         )}
         </p>
         {settings.mode === "auto" && !running ? (
-          <ScheduleInfo hour={settings.runHour} minute={settings.runMinute} everyDays={settings.searchEveryDays} installed={scheduleInstalled()} />
+          <ScheduleInfo hour={settings.runHour} minute={settings.runMinute} everyDays={settings.disabledSources.includes("claude-search") ? null : settings.searchEveryDays} installed={scheduleInstalled()} />
         ) : (
           <RunButton running={running} />
         )}
