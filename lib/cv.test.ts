@@ -41,7 +41,7 @@ describe("extractProfile", () => {
 describe("checkCvFile", () => {
   it("accepts a real PDF", () => expect(checkCvFile("cv.PDF", 1000, pdfHead)).toBeNull());
   it("rejects a renamed non-PDF", () =>
-    expect(checkCvFile("cv.pdf", 1000, new TextEncoder().encode("hello"))).toBe("Chỉ nhận file PDF."));
-  it("rejects files over 5 MB", () => expect(checkCvFile("cv.pdf", 6 * 1024 * 1024, pdfHead)).toBe("File lớn hơn 5 MB."));
-  it("rejects empty input", () => expect(checkCvFile("", 0, new Uint8Array())).toBe("Chưa chọn file."));
+    expect(checkCvFile("cv.pdf", 1000, new TextEncoder().encode("hello"))).toBe("PDF files only."));
+  it("rejects files over 5 MB", () => expect(checkCvFile("cv.pdf", 6 * 1024 * 1024, pdfHead)).toBe("The file is larger than 5 MB."));
+  it("rejects empty input", () => expect(checkCvFile("", 0, new Uint8Array())).toBe("No file chosen."));
 });

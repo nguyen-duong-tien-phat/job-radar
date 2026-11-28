@@ -55,7 +55,7 @@ const LOCATION_NAMES: Record<string, string> = { hcm: "Ho Chi Minh City", hn: "H
 
 export type SearchLimits = Pick<Settings, "searches" | "fetches" | "maxJobs" | "enoughJobs" | "enoughFit">;
 
-export function buildPrompt(profile: Pick<Profile, "skills" | "roles" | "locations" | "years">, companies: string[], today: string, limits: SearchLimits): string {
+export function buildPrompt(profile: Pick<Profile, "skills" | "roles" | "locations" | "years">, companies: string[], known: string[], today: string, limits: SearchLimits): string {
   return `You are searching the web for IT job openings for one developer. Today is ${today}.
 
 Developer profile:
@@ -69,6 +69,8 @@ Task:
 2. Prefer the company's own career page (its site, or its Greenhouse, Lever, Ashby or SmartRecruiters board) over job boards. Mark official=true only when the url is on the company's own site or its applicant-tracking board.
 3. When a company publishes its jobs on Greenhouse (boards.greenhouse.io/<slug> or job-boards.greenhouse.io/<slug>), Lever (jobs.lever.co/<slug>), Ashby (jobs.ashbyhq.com/<slug>) or SmartRecruiters (jobs.smartrecruiters.com/<slug>), add it to "companies" with that ats and slug. These boards are then read automatically every day, so finding new such companies with Vietnam or remote openings is the most valuable result.
 4. Skip these companies, already tracked: ${companies.join(", ") || "(none)"}.
+5. Skip these jobs, already found (company — title). Do not search for them again or return them:
+${known.map((k) => `- ${k}`).join("\n") || "(none)"}
 
 Limits: at most ${limits.searches} web searches and ${limits.fetches} page fetches; the run is stopped if it goes over. Return at most ${limits.maxJobs} jobs. Rate each job's fit with the profile as "fit" from 0 to 10 (10: the job asks for mostly the developer's skills, at their level, in a wanted location). As soon as you have ${limits.enoughJobs} jobs with fit ${limits.enoughFit} or higher, stop searching and answer. Only include jobs whose page you saw or whose listing clearly shows title, company and url; never invent a job, url or salary. "why" is one short sentence on how it fits the profile. "skills" lists the technologies the job asks for. Leave salary and posted_at empty when not stated.
 
@@ -131,6 +133,14 @@ export function toRawJob(j: ClaudeJob): RawJob {
     salary: j.salary ?? null,
     postedAt: j.posted_at && !Number.isNaN(Date.parse(j.posted_at)) ? new Date(j.posted_at).toISOString() : null,
   };
+}
+
+// shortcut: only the most recent 80 found jobs are listed to keep the prompt small; older repeats are still dropped on import by URL.
+export function knownJobs(limit = 80): string[] {
+  const rows = db()
+    .prepare("SELECT company, title FROM jobs WHERE missed < 3 ORDER BY (source = ?) DESC, first_seen DESC LIMIT ?")
+    .all(SOURCE, limit) as { company: string; title: string }[];
+  return rows.map((r) => `${r.company} — ${r.title}`.slice(0, 120));
 }
 
 export function trackedCompanies(): string[] {

@@ -37,10 +37,11 @@ describe("toRawJob", () => {
 
 describe("buildPrompt", () => {
   it("names the profile and the companies to skip", () => {
-    const p = buildPrompt({ skills: ["Go"], roles: ["backend"], locations: ["hn", "remote"], years: 4 }, ["Acme"], "2026-11-28", { searches: 8, fetches: 15, maxJobs: 20, enoughJobs: 5, enoughFit: 9 });
+    const p = buildPrompt({ skills: ["Go"], roles: ["backend"], locations: ["hn", "remote"], years: 4 }, ["Acme"], ["Beta — Go Engineer"], "2026-11-28", { searches: 8, fetches: 15, maxJobs: 20, enoughJobs: 5, enoughFit: 9 });
     expect(p).toContain("Skills: Go");
     expect(p).toContain("Hanoi; remote");
     expect(p).toContain("already tracked: Acme");
+    expect(p).toContain("- Beta — Go Engineer");
     expect(p).toContain("As soon as you have 5 jobs with fit 9 or higher, stop searching");
   });
 });

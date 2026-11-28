@@ -1,7 +1,7 @@
 #!/bin/zsh
 # One run: crawl every source, then the Claude web search.
 # Scheduled runs pass no args, so the search skips itself until its interval has passed;
-# the app's "Tìm job" button passes --force.
+# the app's "Find jobs" button passes --force.
 set -u
 cd "${0:A:h}/.."
 mkdir -p data/logs

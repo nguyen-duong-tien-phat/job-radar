@@ -36,12 +36,12 @@ const LOCATION_HINTS: Record<keyof typeof LOCATIONS, RegExp> = {
   remote: /\bremote\b/,
 };
 
-/** Returns an error message (Vietnamese, shown to the user) or null when the upload is a usable PDF. */
+/** Returns an error message (shown to the user) or null when the upload is a usable PDF. */
 export function checkCvFile(name: string, size: number, head: Uint8Array): string | null {
-  if (size === 0) return "Chưa chọn file.";
-  if (size > MAX_CV_BYTES) return "File lớn hơn 5 MB.";
+  if (size === 0) return "No file chosen.";
+  if (size > MAX_CV_BYTES) return "The file is larger than 5 MB.";
   const magic = String.fromCharCode(...head.subarray(0, 5));
-  if (!name.toLowerCase().endsWith(".pdf") || magic !== "%PDF-") return "Chỉ nhận file PDF.";
+  if (!name.toLowerCase().endsWith(".pdf") || magic !== "%PDF-") return "PDF files only.";
   return null;
 }
 

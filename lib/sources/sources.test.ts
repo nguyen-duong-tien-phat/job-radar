@@ -55,7 +55,7 @@ describe("remote parsers", () => {
   it("remoteok drops the legal notice", () => {
     const jobs = parseRemoteOk([{ legal: "..." } as never, { position: "Data Engineer", company: "X", url: "https://remoteok.com/remote-jobs/1", salary_min: "50000", salary_max: "90000" }]);
     expect(jobs).toHaveLength(1);
-    expect(jobs[0]).toMatchObject({ remote: true, location: "Remote", salary: "50.000–90.000 USD/năm" });
+    expect(jobs[0]).toMatchObject({ remote: true, location: "Remote", salary: "50,000–90,000 USD/yr" });
   });
 
   it("arbeitnow keeps remote jobs only", () => {
@@ -92,7 +92,7 @@ describe("JobPosting JSON-LD", () => {
       location: "Hồ Chí Minh",
       remote: false,
       description: "Node.js, PostgreSQL",
-      salary: "20.000.000–35.000.000 VND/month",
+      salary: "20,000,000–35,000,000 VND/month",
       postedAt: "2026-11-22",
     });
   });

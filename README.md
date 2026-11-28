@@ -46,7 +46,7 @@ npm run crawl          # fetch jobs from every source (~2 min)
 npm run search         # Claude Code web search; skips until the interval set in Settings has passed (--force to run now)
 ```
 
-"Tìm job" (top right) runs the crawl and the web search now, in the background. The settings dialog next to it sets the theme (dark or light), how many jobs the board shows, the run mode (manual by default; automatic installs a daily launchd agent at the set time), how often the web search runs, its model (any Claude model) and its limits. Every uploaded CV is kept with its name and upload time and can be opened or downloaded again.
+"Find jobs" (top right) runs the crawl and the web search now, in the background. The settings dialog next to it sets the theme (dark or light), how many jobs the board shows, the run mode (manual by default; automatic installs a daily launchd agent at the set time), how often the web search runs, its model (any Claude model) and its limits. Every uploaded CV is kept with its name and upload time and can be viewed in a modal or downloaded again. The board sorts by newest found (default), best match or posting date; jobs found by the latest run are tagged New. The web search is told which jobs are already known so it does not spend searches finding them again.
 
 `npm run search` needs the `claude` CLI logged in to a Claude plan. By default it runs Claude Sonnet, asks for at most 8 web searches and 15 page fetches, stops searching once it has 5 jobs it rates 9/10 or better, and is killed at 1.5× those limits; all of these are in Settings. Each run prints the searches, fetches and tokens it used. Claude gets only web search and page fetch; its answer is validated before anything is stored.
 

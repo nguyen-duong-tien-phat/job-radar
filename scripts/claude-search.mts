@@ -12,6 +12,7 @@ import {
   addVerifiedCompanies,
   buildPrompt,
   hoursSinceLastSearch,
+  knownJobs,
   RESULT_SCHEMA,
   SOURCE,
   toolCalls,
@@ -55,7 +56,7 @@ if (file) {
     ["-p", "--model", MODEL, "--output-format", "stream-json", "--verbose", "--json-schema", JSON.stringify(RESULT_SCHEMA), "--tools", "WebSearch,WebFetch", "--allowedTools", "WebSearch,WebFetch", "--strict-mcp-config", "--no-session-persistence"],
     { cwd: tmpdir(), stdio: ["pipe", "pipe", "pipe"] },
   );
-  child.stdin.end(buildPrompt(profile, trackedCompanies(), today, settings));
+  child.stdin.end(buildPrompt(profile, trackedCompanies(), knownJobs(), today, settings));
   const used = { searches: 0, fetches: 0 };
   let final = "";
   let stopped: string | null = null;

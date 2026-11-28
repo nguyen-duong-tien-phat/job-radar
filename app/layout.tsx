@@ -17,7 +17,7 @@ const figures = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Job Radar",
-  description: "Job IT hợp với CV của bạn, ở Việt Nam và remote.",
+  description: "IT jobs that fit your CV, in Vietnam and remote.",
 };
 
 // Theme comes from the settings stored in SQLite, so every request reads it.
@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="vi" data-theme={getSettings().theme} className={`${body.variable} ${figures.variable} h-full`}>
+    <html lang="en" data-theme={getSettings().theme} className={`${body.variable} ${figures.variable} h-full`}>
       <body className="flex min-h-full flex-col">
         {children}
       </body>

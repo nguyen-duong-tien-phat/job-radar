@@ -7,7 +7,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/cv/[id]">) {
   const id = Number((await ctx.params).id);
   const cv = Number.isInteger(id) ? getCv(id) : null;
   const bytes = cv ? await readFile(cvPath(cv.id)).catch(() => null) : null;
-  if (!cv || !bytes) return new Response("Không tìm thấy CV", { status: 404 });
+  if (!cv || !bytes) return new Response("CV not found", { status: 404 });
   const disposition = req.nextUrl.searchParams.has("download") ? "attachment" : "inline";
   return new Response(bytes, {
     headers: {

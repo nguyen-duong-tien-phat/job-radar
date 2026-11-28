@@ -17,7 +17,7 @@ export function RunButton({ running }: { running: boolean }) {
   return (
     <form action={startRunAction}>
       <button type="submit" disabled={running} className={`${buttonPrimary} h-9 px-4`}>
-        {running ? "Đang tìm…" : "Tìm job"}
+        {running ? "Searching…" : "Find jobs"}
       </button>
     </form>
   );

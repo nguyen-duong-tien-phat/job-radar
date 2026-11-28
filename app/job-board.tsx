@@ -1,5 +1,6 @@
+import Link from "next/link";
 import type { Profile } from "@/lib/db";
-import { lastCrawlAt, rankedJobs } from "@/lib/score";
+import { lastCrawlAt, latestRunStart, rankedJobs, type Sort, SORTS, sortJobs } from "@/lib/score";
 import { runningPid } from "@/lib/run";
 import { getSettings, MODELS, RANGES } from "@/lib/settings";
 import { ago, sourceName, updatedAt } from "@/lib/ui";
@@ -11,22 +12,45 @@ const COLS = "grid-cols-[3rem_minmax(0,1fr)] @3xl:grid-cols-[3.5rem_minmax(0,1fr
 
 const list = (skills: string[], max = 5) => skills.slice(0, max).join(", ") + (skills.length > max ? ` +${skills.length - max}` : "");
 
-export function JobBoard({ profile, className = "" }: { profile: Profile; className?: string }) {
-  const jobs = rankedJobs(profile);
+export function JobBoard({ profile, sort, className = "" }: { profile: Profile; sort: Sort; className?: string }) {
+  const jobs = sortJobs(rankedJobs(profile), sort);
   const crawled = lastCrawlAt();
+  const runStart = latestRunStart();
   const settings = getSettings();
-  const SHOWN = settings.jobsShown;
+  const shown = settings.jobsShown;
+  // Found by the latest run; everything else was found earlier.
+  const isNew = (firstSeen: string) => runStart !== null && firstSeen >= runStart;
+  const newCount = jobs.filter((j) => isNew(j.first_seen)).length;
 
   return (
     <section aria-labelledby="jobs-title" className={`@container flex min-h-0 flex-col ${className}`}>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <h1 id="jobs-title" className="text-xl font-semibold tracking-tight">
-          Job hợp với bạn
+          Jobs for you
         </h1>
+        <nav aria-label="Sort" className="flex gap-1">
+          {(Object.keys(SORTS) as Sort[]).map((s) => (
+            <Link
+              key={s}
+              href={s === "new" ? "/" : `/?sort=${s}`}
+              scroll={false}
+              aria-current={sort === s ? "true" : undefined}
+              className={`rounded-md px-2.5 py-1 text-[13px] transition-colors ${sort === s ? "bg-seam text-paper" : "text-steel hover:text-paper"}`}
+            >
+              {SORTS[s]}
+            </Link>
+          ))}
+        </nav>
         <p className="ml-auto text-sm text-steel">
         {jobs.length ? (
           <>
-            <span className="figure">{jobs.length}</span> job
+            <span className="figure">{jobs.length}</span> jobs
+            {newCount > 0 && (
+              <>
+                {" "}
+                · <span className="figure text-signal">{newCount}</span> new
+              </>
+            )}
             {crawled && (
               <>
                 {" "}
@@ -35,7 +59,7 @@ export function JobBoard({ profile, className = "" }: { profile: Profile; classN
             )}
           </>
         ) : (
-          "Chưa có job"
+          "No jobs yet"
         )}
         </p>
         <RunButton running={runningPid() !== null} />
@@ -49,14 +73,15 @@ export function JobBoard({ profile, className = "" }: { profile: Profile; classN
       ) : (
         <div className="relative mt-4 min-h-0 flex-1 overflow-y-auto rounded-md border border-seam bg-slate">
           <div className={`sticky top-0 z-10 hidden gap-4 border-b border-seam bg-slate px-5 py-3 @3xl:grid ${COLS}`} aria-hidden="true">
-            <span className="caption">Điểm</span>
+            <span className="caption">Score</span>
             <span className="caption">Job</span>
-            <span className="caption">Công ty · nguồn</span>
-            <span className="caption">Nơi làm</span>
-            <span className="caption text-right">Đăng</span>
+            <span className="caption">Company · source</span>
+            <span className="caption">Location</span>
+            <span className="caption text-right">Posted</span>
           </div>
           <ol>
-            {jobs.slice(0, SHOWN).map((j) => (
+            {jobs.slice(0, shown).map((j) => (
+              // Rows found by an earlier run are dimmed; new ones carry a "New" tag.
               <li key={j.id} className="border-b border-seam last:border-b-0">
                 <a
                   href={j.url}
@@ -65,16 +90,19 @@ export function JobBoard({ profile, className = "" }: { profile: Profile; classN
                   className={`grid gap-x-4 gap-y-1 px-5 py-4 transition-colors hover:bg-seam/50 focus-visible:-outline-offset-2 ${COLS}`}
                 >
                   <span className={`figure row-span-3 text-2xl leading-tight @3xl:row-span-1 ${j.score >= 70 ? "text-paper" : "text-steel"}`}>
-                    <span className="sr-only">Điểm </span>
+                    <span className="sr-only">Score </span>
                     {j.score}
                   </span>
                   <span className="min-w-0 [overflow-wrap:anywhere]">
-                    <span className="block font-medium">{j.title}</span>
+                    <span className={`block font-medium ${isNew(j.first_seen) ? "" : "text-paper/75"}`}>
+                      {isNew(j.first_seen) && <span className="mr-2 rounded-sm bg-signal-dim px-1.5 py-0.5 align-[2px] text-[11px] font-semibold tracking-wide text-signal uppercase">New</span>}
+                      {j.title}
+                    </span>
                     <span className="mt-0.5 block text-sm text-steel">
-                      {j.matched.length > 0 && <>Hợp: <span className="text-paper">{list(j.matched)}</span></>}
+                      {j.matched.length > 0 && <>Matches: <span className="text-paper">{list(j.matched)}</span></>}
                       {j.matched.length > 0 && j.missing.length > 0 && " · "}
-                      {j.missing.length > 0 && <>Thiếu: {list(j.missing, 4)}</>}
-                      {!j.matched.length && !j.missing.length && "Tin không nêu skill cụ thể"}
+                      {j.missing.length > 0 && <>Missing: {list(j.missing, 4)}</>}
+                      {!j.matched.length && !j.missing.length && "No skills listed"}
                     </span>
                   </span>
                   <span className="col-start-2 min-w-0 text-sm @3xl:col-start-auto">
@@ -93,14 +121,17 @@ export function JobBoard({ profile, className = "" }: { profile: Profile; classN
                     {j.salary && <span className="figure block truncate text-xs">{j.salary}</span>}
                     <span className="figure ml-auto @3xl:hidden">{ago(j.posted_at ?? j.first_seen)}</span>
                   </span>
-                  <span className="figure hidden text-right text-sm text-steel @3xl:block">{ago(j.posted_at ?? j.first_seen)}</span>
+                  <span className="hidden text-right text-sm text-steel @3xl:block">
+                    <span className="figure block">{ago(j.posted_at ?? j.first_seen)}</span>
+                    {!isNew(j.first_seen) && <span className="block text-xs">seen {ago(j.first_seen)}</span>}
+                  </span>
                 </a>
               </li>
             ))}
           </ol>
-          {jobs.length > SHOWN && (
+          {jobs.length > shown && (
             <p className="border-t border-seam px-5 py-3 text-sm text-steel">
-              <span className="figure">{SHOWN}</span> / <span className="figure">{jobs.length}</span>
+              <span className="figure">{shown}</span> / <span className="figure">{jobs.length}</span>
             </p>
           )}
         </div>

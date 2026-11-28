@@ -62,8 +62,8 @@ export function SettingsDialog({ settings: s, ranges, models }: Props) {
       <button
         type="button"
         onClick={() => dialog.current?.showModal()}
-        aria-label="Cài đặt"
-        title="Cài đặt"
+        aria-label="Settings"
+        title="Settings"
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-seam-strong text-steel transition-colors hover:border-steel hover:text-paper"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
@@ -81,9 +81,9 @@ export function SettingsDialog({ settings: s, ranges, models }: Props) {
         <form action={action}>
           <div className="flex items-center justify-between px-5 py-4">
             <h2 id="settings-title" className="font-semibold">
-              Cài đặt
+              Settings
             </h2>
-            <button type="button" onClick={() => dialog.current?.close()} aria-label="Đóng" className="flex h-8 w-8 items-center justify-center rounded-md text-steel hover:bg-seam hover:text-paper">
+            <button type="button" onClick={() => dialog.current?.close()} aria-label="Close" className="flex h-8 w-8 items-center justify-center rounded-md text-steel hover:bg-seam hover:text-paper">
               <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
                 <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
@@ -92,21 +92,21 @@ export function SettingsDialog({ settings: s, ranges, models }: Props) {
 
           <div className="grid md:grid-cols-2 md:divide-x md:divide-seam">
             <div>
-            <Section title="Giao diện">
-              <Row label="Theme">{radios("theme", [["dark", "Tối"], ["light", "Sáng"]], s.theme)}</Row>
-              {num("jobsShown", "Số job hiện trong bảng")}
+            <Section title="Appearance">
+              <Row label="Theme">{radios("theme", [["dark", "Dark"], ["light", "Light"]], s.theme)}</Row>
+              {num("jobsShown", "Jobs shown")}
             </Section>
 
-            <Section title="Chạy">
-              <Row label="Chế độ">{radios("mode", [["manual", "Thủ công"], ["auto", "Tự động"]], s.mode)}</Row>
-              <Row label="Giờ chạy" htmlFor="set-runTime">
+            <Section title="Run">
+              <Row label="Mode">{radios("mode", [["manual", "Manual"], ["auto", "Automatic"]], s.mode)}</Row>
+              <Row label="Daily run time" htmlFor="set-runTime">
                 <input id="set-runTime" name="runTime" type="time" required defaultValue={`${pad(s.runHour)}:${pad(s.runMinute)}`} className={`${field} w-28`} />
               </Row>
-              {num("searchEveryDays", "Tìm web bằng Claude mỗi (ngày)")}
+              {num("searchEveryDays", "Web search every (days)")}
             </Section>
 
             </div>
-            <Section title="Tìm web bằng Claude">
+            <Section title="Claude web search">
               <Row label="Model" htmlFor="set-model">
                 <select id="set-model" name="model" defaultValue={s.model} className="h-9 rounded-md border border-seam-strong bg-slate px-2 text-sm hover:border-steel focus:border-signal focus:outline-none">
                   {Object.entries(models).map(([id, label]) => (
@@ -116,20 +116,20 @@ export function SettingsDialog({ settings: s, ranges, models }: Props) {
                   ))}
                 </select>
               </Row>
-              {num("searches", "Số lần search tối đa")}
-              {num("fetches", "Số trang đọc tối đa")}
-              {num("maxJobs", "Số job trả về tối đa")}
-              {num("enoughJobs", "Dừng sớm khi đủ (job)")}
-              {num("enoughFit", "… có độ hợp từ (/10)")}
+              {num("searches", "Max searches")}
+              {num("fetches", "Max pages read")}
+              {num("maxJobs", "Max jobs returned")}
+              {num("enoughJobs", "Stop early at (jobs)")}
+              {num("enoughFit", "… with fit of at least (/10)")}
             </Section>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 border-t border-seam px-5 py-4">
             <button type="submit" disabled={pending} className={buttonPrimary}>
-              {pending ? "Đang lưu…" : "Lưu cài đặt"}
+              {pending ? "Saving…" : "Save settings"}
             </button>
             <button type="button" onClick={() => dialog.current?.close()} className={buttonSecondary}>
-              Đóng
+              Close
             </button>
             {state.error && (
               <p role="alert" className="w-full text-sm text-alert">

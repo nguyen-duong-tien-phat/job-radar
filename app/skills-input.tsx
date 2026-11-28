@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-/** Skill chips with an add field; submits as one comma-joined "skills" value. New chips light signal yellow until saved. */
+/** Skill chips with an add field; submits as one comma-joined "skills" value. New chips light the accent until saved. */
 export function SkillsInput({ initial }: { initial: string[] }) {
   const [skills, setSkills] = useState(initial);
   const [draft, setDraft] = useState("");
@@ -21,9 +21,9 @@ export function SkillsInput({ initial }: { initial: string[] }) {
     <div>
       <input type="hidden" name="skills" value={skills.join(", ")} />
       {skills.length === 0 ? (
-        <p className="text-sm text-signal">Không thấy skill nào trong CV. Thêm skill bạn có ở dưới.</p>
+        <p className="text-sm text-signal">No skills found in the CV. Add yours below.</p>
       ) : (
-        <ul className="flex flex-wrap gap-2" aria-label="Skill">
+        <ul className="flex flex-wrap gap-2" aria-label="Skills">
           {skills.map((s) => {
             const added = !initial.includes(s);
             return (
@@ -32,11 +32,11 @@ export function SkillsInput({ initial }: { initial: string[] }) {
                 className={`flex h-8 items-center rounded-md border pl-3 text-sm ${added ? "border-signal text-signal" : "border-seam-strong"}`}
               >
                 {s}
-                {added && <span className="sr-only"> (mới thêm, chưa lưu)</span>}
+                {added && <span className="sr-only"> (added, not saved)</span>}
                 <button
                   type="button"
                   onClick={() => setSkills(skills.filter((k) => k !== s))}
-                  aria-label={`Bỏ ${s}`}
+                  aria-label={`Remove ${s}`}
                   className="ml-1 flex h-full w-8 items-center justify-center rounded-r-md text-steel hover:bg-seam hover:text-paper"
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
@@ -50,15 +50,15 @@ export function SkillsInput({ initial }: { initial: string[] }) {
       )}
       {removed.length > 0 && (
         <p className="mt-3 text-sm text-signal">
-          Sẽ bỏ khi lưu: {removed.join(", ")}{" "}
+          Removed on save: {removed.join(", ")}{" "}
           <button type="button" onClick={() => setSkills([...skills, ...removed])} className="underline underline-offset-4 hover:text-paper">
-            Hoàn tác
+            Undo
           </button>
         </p>
       )}
       <div className="mt-4 flex max-w-md gap-2">
         <label htmlFor="skill-draft" className="sr-only">
-          Thêm skill
+          Add skill
         </label>
         <input
           id="skill-draft"
@@ -70,11 +70,11 @@ export function SkillsInput({ initial }: { initial: string[] }) {
               add();
             }
           }}
-          placeholder="Thêm skill, ví dụ Kafka"
+          placeholder="Add a skill, e.g. Kafka"
           className="h-9 flex-1 rounded-md border border-seam-strong bg-transparent px-3 text-sm placeholder:text-steel hover:border-steel focus:border-signal focus:outline-none"
         />
         <button type="button" onClick={add} className="h-9 rounded-md border border-seam-strong px-4 text-sm hover:border-steel hover:bg-seam">
-          Thêm
+          Add
         </button>
       </div>
     </div>

@@ -85,3 +85,29 @@ export function lastCrawlAt(): string | null {
   const row = db().prepare("SELECT MAX(started_at) AS at FROM crawl_runs WHERE ok = 1").get() as { at: string | null };
   return row.at;
 }
+
+export const SORTS = { new: "Newest", match: "Best match", posted: "Posted" } as const;
+export type Sort = keyof typeof SORTS;
+
+const time = (iso: string | null) => (iso ? Date.parse(iso) || 0 : 0);
+
+/** new: found most recently, then best match; match: best match first; posted: most recently posted. */
+export function sortJobs(jobs: Scored[], sort: Sort): Scored[] {
+  const by: Record<Sort, (a: Scored, b: Scored) => number> = {
+    new: (a, b) => time(b.first_seen) - time(a.first_seen) || b.score - a.score,
+    match: (a, b) => b.score - a.score || time(b.first_seen) - time(a.first_seen),
+    posted: (a, b) => time(b.posted_at ?? b.first_seen) - time(a.posted_at ?? a.first_seen) || b.score - a.score,
+  };
+  return [...jobs].sort(by[sort]);
+}
+
+/**
+ * Start of the latest run (crawl + web search started together, within an hour).
+ * Jobs first seen since then are "new"; the rest were found by an earlier run.
+ */
+export function latestRunStart(): string | null {
+  const last = (db().prepare("SELECT MAX(started_at) AS at FROM crawl_runs WHERE ok = 1").get() as { at: string | null }).at;
+  if (!last) return null;
+  const from = new Date(Date.parse(last) - 3_600_000).toISOString();
+  return (db().prepare("SELECT MIN(started_at) AS at FROM crawl_runs WHERE ok = 1 AND started_at >= ?").get(from) as { at: string }).at;
+}

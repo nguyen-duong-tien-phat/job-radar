@@ -50,3 +50,14 @@ describe("dedupe", () => {
     expect(dedupe([a, b]).map((j) => j.id)).toEqual([2]);
   });
 });
+
+describe("sortJobs", () => {
+  const a = scoreJob(job({ id: 1, first_seen: "2026-11-20T00:00:00Z", posted_at: "2026-11-27T00:00:00Z" }), profile, now);
+  const b = scoreJob(job({ id: 2, first_seen: "2026-11-27T00:00:00Z", posted_at: "2026-11-01T00:00:00Z", description: "Kafka" }), profile, now);
+  it("newest found first by default, best match and posted date on request", async () => {
+    const { sortJobs } = await import("./score");
+    expect(sortJobs([a, b], "new").map((j) => j.id)).toEqual([2, 1]);
+    expect(sortJobs([b, a], "match").map((j) => j.id)).toEqual([1, 2]);
+    expect(sortJobs([b, a], "posted").map((j) => j.id)).toEqual([1, 2]);
+  });
+});

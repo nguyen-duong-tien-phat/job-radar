@@ -22,7 +22,7 @@ function salaryText(base: unknown): string | null {
   const min = str(v.minValue);
   const max = str(v.maxValue);
   const one = str(v.value);
-  const n = (s: string) => Number(s).toLocaleString("vi-VN");
+  const n = (s: string) => Number(s).toLocaleString("en-US");
   const range = min && max ? `${n(min)}–${n(max)}` : min || max ? n(min || max) : /^\d/.test(one) ? n(one) : "";
   return range ? `${range} ${str(b.currency)}/${str(v.unitText).toLowerCase() || "month"}` : null;
 }

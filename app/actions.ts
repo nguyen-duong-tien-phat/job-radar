@@ -3,30 +3,30 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { checkCvFile, extractProfile, LOCATIONS, pdfToText, ROLES } from "@/lib/cv";
 import { addCv, changedFields, cvPath, getProfile, saveProfile } from "@/lib/db";
 import { startRun } from "@/lib/run";
 import { installSchedule, removeSchedule, scheduleInstalled } from "@/lib/schedule";
 import { parseSettings, saveSettings } from "@/lib/settings";
 
-export type UploadState = { error: string | null };
+export type UploadState = { error: string | null; done: number | null };
 
+/** Stores the CV, reads it into the profile; the caller then opens the profile editor. */
 export async function uploadCv(_prev: UploadState, form: FormData): Promise<UploadState> {
   const file = form.get("cv");
-  if (!(file instanceof File)) return { error: "Chưa chọn file." };
+  if (!(file instanceof File)) return { error: "No file chosen.", done: null };
   const bytes = new Uint8Array(await file.arrayBuffer());
   const invalid = checkCvFile(file.name, file.size, bytes);
-  if (invalid) return { error: invalid };
+  if (invalid) return { error: invalid, done: null };
 
   let text: string;
   try {
     text = await pdfToText(bytes.slice()); // pdf.js detaches the buffer it reads
   } catch {
-    return { error: "Không đọc được file PDF này." };
+    return { error: "Could not read this PDF.", done: null };
   }
   if (text.replace(/\s/g, "").length < 50) {
-    return { error: "PDF không có chữ đọc được (có thể là ảnh scan). Hãy xuất CV ra PDF dạng text." };
+    return { error: "This PDF has no readable text (probably a scan). Export the CV as a text PDF.", done: null };
   }
 
   // Display name only (the file is stored by id): drop control characters, keep it short.
@@ -36,15 +36,18 @@ export async function uploadCv(_prev: UploadState, form: FormData): Promise<Uplo
   const found = extractProfile(text);
   const old = getProfile();
   saveProfile({ cvText: text, ...found, minSalaryUsd: old?.minSalaryUsd ?? null });
-  redirect("/?edit=1"); // check what was read from the CV once, before using it
+  revalidatePath("/");
+  return { error: null, done: Date.now() };
 }
 
 const pickKnown = (values: FormDataEntryValue[], known: object) =>
   values.map(String).filter((v) => Object.hasOwn(known, v));
 
-export async function updateProfile(form: FormData): Promise<void> {
+export type ProfileState = { error: string | null; saved: string | null };
+
+export async function updateProfile(_prev: ProfileState, form: FormData): Promise<ProfileState> {
   const current = getProfile();
-  if (!current) redirect("/");
+  if (!current) return { error: "Upload a CV first.", saved: null };
 
   const skills = [
     ...new Set(
@@ -70,7 +73,7 @@ export async function updateProfile(form: FormData): Promise<void> {
   saveProfile({ cvText: current.cvText, ...next });
   revalidatePath("/");
   // The page lights the changed fields once, so the user sees what this save did.
-  redirect(`/?saved=${changed.join(",") || "none"}`);
+  return { error: null, saved: changed.join(",") || "none" };
 }
 
 export type SettingsState = { error: string | null; savedAt: number | null };
@@ -84,7 +87,7 @@ export async function saveSettingsAction(_prev: SettingsState, form: FormData): 
     if (settings.mode === "auto") installSchedule(settings.runHour, settings.runMinute);
     else if (scheduleInstalled()) removeSchedule();
   } catch (e) {
-    return { error: `Đã lưu cài đặt, nhưng chưa cài được lịch chạy: ${e instanceof Error ? e.message : String(e)}`, savedAt: null };
+    return { error: `Settings saved, but the schedule could not be installed: ${e instanceof Error ? e.message : String(e)}`, savedAt: null };
   }
   revalidatePath("/", "layout");
   return { error: null, savedAt: Date.now() };

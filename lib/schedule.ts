@@ -31,7 +31,7 @@ const domain = () => `gui/${process.getuid?.() ?? 501}`;
 /** Writes the agent with this time and (re)loads it. launchd runs a missed time when the Mac wakes. */
 export function installSchedule(hour: number, minute: number) {
   const claude = spawnSync("/bin/zsh", ["-lc", "command -v claude"], { encoding: "utf8" }).stdout.trim();
-  if (!claude) throw new Error("Không tìm thấy lệnh claude trong PATH.");
+  if (!claude) throw new Error("The claude command was not found in PATH.");
   mkdirSync(path.dirname(PLIST), { recursive: true });
   writeFileSync(PLIST, plistXml(process.cwd(), [path.dirname(process.execPath), path.dirname(claude)], hour, minute));
   launchctl("bootout", `${domain()}/${LABEL}`); // not loaded yet is fine

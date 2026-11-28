@@ -4,7 +4,7 @@ export const MODELS = { "claude-fable-5-2": "Fable 5.2", "claude-opus-5-5": "Opu
 
 export type Settings = {
   theme: "dark" | "light";
-  /** manual: runs only from the "Tìm job" button; auto: also daily at runHour:runMinute (launchd). */
+  /** manual: runs only from the "Find jobs" button; auto: also daily at runHour:runMinute (launchd). */
   mode: "manual" | "auto";
   jobsShown: number;
   runHour: number;
