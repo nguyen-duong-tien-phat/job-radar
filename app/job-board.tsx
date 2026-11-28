@@ -1,8 +1,10 @@
 import type { Profile } from "@/lib/db";
 import { lastCrawlAt, rankedJobs } from "@/lib/score";
+import { scheduleInstalled } from "@/lib/schedule";
+import { getSettings, MODELS, RANGES } from "@/lib/settings";
 import { ago, sourceName, updatedAt } from "@/lib/ui";
+import { SettingsDialog } from "./settings-dialog";
 
-const SHOWN = 100;
 // The board's own width (container query), not the viewport, decides its columns: it sits beside the profile.
 const COLS = "grid-cols-[3rem_minmax(0,1fr)] @3xl:grid-cols-[3.5rem_minmax(0,1fr)_12rem_9rem_4.5rem]";
 
@@ -11,35 +13,36 @@ const list = (skills: string[], max = 5) => skills.slice(0, max).join(", ") + (s
 export function JobBoard({ profile, className = "" }: { profile: Profile; className?: string }) {
   const jobs = rankedJobs(profile);
   const crawled = lastCrawlAt();
+  const settings = getSettings();
+  const SHOWN = settings.jobsShown;
 
   return (
     <section aria-labelledby="jobs-title" className={`@container flex min-h-0 flex-col ${className}`}>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <div className="flex items-center gap-4">
         <h1 id="jobs-title" className="text-xl font-semibold tracking-tight">
           Job hợp với bạn
         </h1>
-        <p className="text-sm text-steel">
+        <p className="ml-auto text-sm text-steel">
         {jobs.length ? (
           <>
-            <span className="figure">{jobs.length}</span> job ở VN và remote, xếp theo độ hợp
+            <span className="figure">{jobs.length}</span> job
             {crawled && (
               <>
                 {" "}
-                · lấy lúc <span className="figure">{updatedAt(crawled)}</span>
+                · <span className="figure">{updatedAt(crawled)}</span>
               </>
             )}
           </>
         ) : (
-          "Chưa có job nào."
+          "Chưa có job"
         )}
         </p>
+        <SettingsDialog settings={settings} ranges={RANGES} models={MODELS} scheduleOn={scheduleInstalled()} />
       </div>
 
       {jobs.length === 0 ? (
         <div className="mt-4 max-w-xl rounded-md border border-seam bg-slate px-6 py-6">
-          <p>Chạy lệnh này trong thư mục dự án để lấy job từ các nguồn, mất khoảng 2 phút:</p>
-          <pre className="figure mt-4 rounded-md border border-seam-strong px-4 py-3 text-sm">npm run crawl</pre>
-          <p className="mt-4 text-sm text-steel">Xong thì tải lại trang này.</p>
+          <pre className="figure rounded-md border border-seam-strong px-4 py-3 text-sm">npm run crawl</pre>
         </div>
       ) : (
         <div className="relative mt-4 min-h-0 flex-1 overflow-y-auto rounded-md border border-seam bg-slate">
@@ -95,7 +98,7 @@ export function JobBoard({ profile, className = "" }: { profile: Profile; classN
           </ol>
           {jobs.length > SHOWN && (
             <p className="border-t border-seam px-5 py-3 text-sm text-steel">
-              Đang hiện <span className="figure">{SHOWN}</span> job có điểm cao nhất.
+              <span className="figure">{SHOWN}</span> / <span className="figure">{jobs.length}</span>
             </p>
           )}
         </div>

@@ -43,6 +43,9 @@ CREATE TABLE IF NOT EXISTS companies (
   PRIMARY KEY (ats, slug)
 );
 
+-- Key/value settings edited in the app (lib/settings.ts).
+CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+
 CREATE TABLE IF NOT EXISTS crawl_runs (
   id INTEGER PRIMARY KEY,
   source TEXT NOT NULL,

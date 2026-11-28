@@ -43,11 +43,12 @@ Only public APIs, RSS feeds and pages that `robots.txt` allows. At most one requ
 npm install
 npm run dev            # http://localhost:3000, upload your CV there
 npm run crawl          # fetch jobs from every source (~2 min)
-npm run search         # Claude Code web search; skips if the last one was < 44 h ago (--force to run now)
-ops/install-schedule.sh  # optional: run crawl + search every day at 18:00 via launchd
+npm run search         # Claude Code web search; skips until the interval set in Settings has passed (--force to run now)
 ```
 
-`npm run search` needs the `claude` CLI logged in to a Claude plan. It runs Claude Sonnet (`claude-sonnet-5-5`), asks for at most 8 web searches and 15 page fetches, stops searching once it has 5 jobs it rates 9/10 or better, and is killed at 12 / 24. Each run prints the searches, fetches and tokens it used. Claude gets only web search and page fetch; its answer is validated before anything is stored.
+The settings dialog (button at the top right) sets the theme (dark or light), how many jobs the board shows, the daily run (on/off and time, installed as a launchd agent), how often the web search runs, its model and its limits.
+
+`npm run search` needs the `claude` CLI logged in to a Claude plan. By default it runs Claude Sonnet, asks for at most 8 web searches and 15 page fetches, stops searching once it has 5 jobs it rates 9/10 or better, and is killed at 1.5× those limits; all of these are in Settings. Each run prints the searches, fetches and tokens it used. Claude gets only web search and page fetch; its answer is validated before anything is stored.
 
 ## Roadmap
 

@@ -18,18 +18,14 @@ export function UploadForm({ label, large = false }: { label: string; large?: bo
       >
         <span className={`flex flex-col justify-center gap-1 px-6 ${large ? "min-h-44 py-8" : "min-h-24 py-5"}`}>
           <span className={`${large ? "text-lg font-medium" : "font-medium"} ${fileName ? "text-signal [overflow-wrap:anywhere]" : ""}`}>
-            {fileName ?? "Kéo file vào đây hoặc bấm để chọn"}
-          </span>
-          <span className="text-sm text-steel">
-            {fileName ? "Bấm để chọn file khác" : "Chỉ PDF có chữ, không nhận ảnh scan."}
+            {fileName ?? "Kéo CV vào đây hoặc bấm để chọn"}
           </span>
         </span>
         {large && (
-          <span className="grid grid-cols-3 divide-x divide-dashed divide-seam-strong border-t border-dashed border-seam-strong">
+          <span className="grid grid-cols-2 divide-x divide-dashed divide-seam-strong border-t border-dashed border-seam-strong">
             {[
               ["Định dạng", "PDF", true],
               ["Tối đa", "5 MB", true],
-              ["Lưu ở", "Máy này", false],
             ].map(([caption, value, isFigure]) => (
               <span key={String(caption)} className="px-4 py-3 sm:px-6">
                 <span className="caption block">{caption}</span>

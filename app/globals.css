@@ -1,23 +1,50 @@
 @import "tailwindcss";
 
-/* Evening board: dark ink ground, hairline seams, one signal yellow for action, change and focus. */
-@theme inline {
-  --color-ink: #0f1215;
-  --color-slate: #171b20;
-  --color-seam: #2a3038;
-  --color-seam-strong: #3a424d;
-  --color-paper: #ecebe6;
-  --color-steel: #8a929c;
-  --color-signal: #f2c230;
-  --color-signal-bright: #ffd24d;
-  --color-signal-dim: #3a3116;
-  --color-alert: #ff8a7a;
-  --font-sans: var(--font-body), system-ui, sans-serif;
-  --font-mono: var(--font-figures), ui-monospace, monospace;
+/* Two themes, picked in Settings (data-theme on <html>). Token names keep their roles in both:
+   ink = ground, slate = raised pass, seam = hairlines, paper = text, steel = secondary text,
+   signal = the one accent (action, change, focus). */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #0f1215;
+  --slate: #171b20;
+  --seam: #2a3038;
+  --seam-strong: #3a424d;
+  --paper: #ecebe6;
+  --steel: #8a929c;
+  --signal: #f2c230;
+  --signal-bright: #ffd24d;
+  --signal-dim: #3a3116;
+  --alert: #ff8a7a;
 }
 
-:root {
-  color-scheme: dark;
+[data-theme="light"] {
+  color-scheme: light;
+  --ink: #f4f3ef;
+  --slate: #ffffff;
+  --seam: #e2e0d9;
+  --seam-strong: #c9c6bd;
+  --paper: #16191d;
+  --steel: #5c636c;
+  --signal: #1d5fd6;
+  --signal-bright: #2b6ee6;
+  --signal-dim: #e4ecfb;
+  --alert: #b42318;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-slate: var(--slate);
+  --color-seam: var(--seam);
+  --color-seam-strong: var(--seam-strong);
+  --color-paper: var(--paper);
+  --color-steel: var(--steel);
+  --color-signal: var(--signal);
+  --color-signal-bright: var(--signal-bright);
+  --color-signal-dim: var(--signal-dim);
+  --color-alert: var(--alert);
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-mono: var(--font-figures), ui-monospace, monospace;
 }
 
 body {

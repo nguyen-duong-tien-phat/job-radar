@@ -101,7 +101,6 @@ export function ProfilePanel({ profile, saved, className = "" }: { profile: Prof
           <button type="submit" className={buttonPrimary}>
             Lưu profile
           </button>
-          <p className="text-xs text-steel">Chỗ đổi chưa lưu hiện màu vàng.</p>
         </div>
       </form>
 

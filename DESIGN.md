@@ -179,7 +179,7 @@ A near-black evening palette of cool neutrals with a single warm signal.
 
 ## Layout
 
-With a profile, the app is one screen: max 90rem, a 22rem profile pass on the left and the job board on the right, each scrolling on its own inside the viewport (lg and up). Below lg they stack, board first, profile after; the board switches its row layout by its own width (container query at 48rem). Before a CV exists, the upload page is a two-column 1:1.15 split, max 72rem. Gutters: 16px on mobile, 32px from sm up. Header is a 56px bar under a hairline with the brand only.
+With a profile, the app is one screen: max 90rem, a 22rem profile pass on the left and the job board on the right, each scrolling on its own inside the viewport (lg and up). Below lg they stack, board first, profile after; the board switches its row layout by its own width (container query at 48rem). Before a CV exists, the upload page is a two-column 1:1.15 split, max 72rem. Gutters: 16px on mobile, 32px from sm up. No header: the screen is the profile and the board. A settings button (sliders icon, 36px, seam border) sits at the right end of the board's title row and opens a native dialog: slate panel, seam border, fieldset sections with captions, one primary Save. Two themes share the token names: dark (the evening board) and light (ground #f4f3ef, pass #ffffff, seams #e2e0d9/#c9c6bd, text #16191d, secondary #5c636c, accent #1d5fd6), chosen in Settings and set as data-theme on <html>.
 
 Two-column split on large screens uses a 1 : 1.15 ratio with an 80px column gap (first-run hero and the replace-CV section); it stacks below lg. Vertical rhythm steps through 8 / 16 / 24 / 40 / 64px: 40px between heading block and the pass, 64px before the replace-CV section. Lists are rows separated by hairlines, with a fixed 2.5rem mono index column.
 
@@ -226,7 +226,7 @@ Compact and solid; one yellow per screen.
 - **Drop zone (stub):** dashed Strong Seam border, caption plus prompt plus steel hint; the large first-run version sits on slate with a dashed three-cell footer of facts. Chosen file turns the border and filename signal; error turns the border Alert Coral.
 
 ### Navigation
-- **Style:** 56px header bar under a Seam hairline with the brand in semibold, slight tracking. No nav: profile and jobs share one screen.
+- **Style:** none. Profile and jobs share one screen; settings open from the board's title row.
 
 ### Saved Status
 A small Signal Dim note with Signal Yellow text, top right of the page heading, naming what was saved.

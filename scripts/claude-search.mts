@@ -1,6 +1,6 @@
 // Every other day: ask Claude Code (headless, on the owner's Claude plan) to search the web for jobs and
 // for companies with public ATS boards, then store what passes validation.
-// Usage: npm run search                  (skips when the last search was less than 44 hours ago)
+// Usage: npm run search                  (skips until the interval set in the app's settings has passed)
 //        npm run search -- --force
 //        npm run search -- --file data/claude/2026-11-28.json   (import a saved answer, no Claude call)
 import { spawn } from "node:child_process";
@@ -10,12 +10,8 @@ import path from "node:path";
 import { createInterface } from "node:readline";
 import {
   addVerifiedCompanies,
-  BUDGET,
   buildPrompt,
-  ENOUGH,
-  HARD_LIMIT,
   hoursSinceLastSearch,
-  MODEL,
   RESULT_SCHEMA,
   SOURCE,
   toolCalls,
@@ -25,11 +21,15 @@ import {
 } from "../lib/claude-search";
 import { DATA_DIR, getProfile } from "../lib/db";
 import { isTargetLocation, isTechJob, recordRun, saveJobs } from "../lib/jobs";
+import { getSettings, hardLimit } from "../lib/settings";
 import { fetchAts } from "../lib/sources/ats";
 
 const args = process.argv.slice(2);
 const file = args.includes("--file") ? args[args.indexOf("--file") + 1] : null;
-const MIN_HOURS = 44; // "every other day", with slack for a scheduler that fires a little early
+const settings = getSettings();
+const MODEL = settings.model;
+const HARD_LIMIT = hardLimit(settings);
+const MIN_HOURS = settings.searchEveryDays * 24 - 4; // slack for a scheduler that fires a little early
 
 if (!file && !args.includes("--force") && hoursSinceLastSearch() < MIN_HOURS) {
   console.log(`Skipped: last web search was ${Math.round(hoursSinceLastSearch())} hours ago (runs every ${MIN_HOURS}+ hours; --force to run now).`);
@@ -47,7 +47,7 @@ let raw: string;
 if (file) {
   raw = readFileSync(file, "utf8");
 } else {
-  console.log(`Claude search: model ${MODEL}, asks for ≤${BUDGET.searches} searches / ≤${BUDGET.fetches} fetches, stops at ${HARD_LIMIT.searches} / ${HARD_LIMIT.fetches}.`);
+  console.log(`Claude search: model ${MODEL}, asks for ≤${settings.searches} searches / ≤${settings.fetches} fetches, stops at ${HARD_LIMIT.searches} / ${HARD_LIMIT.fetches}.`);
   // Only web search and fetch: no shell, no file writes. Run outside the repo so no project settings load.
   // stream-json lets us count tool calls as they happen and stop a run that goes over budget.
   const child = spawn(
@@ -55,7 +55,7 @@ if (file) {
     ["-p", "--model", MODEL, "--output-format", "stream-json", "--verbose", "--json-schema", JSON.stringify(RESULT_SCHEMA), "--tools", "WebSearch,WebFetch", "--allowedTools", "WebSearch,WebFetch", "--strict-mcp-config", "--no-session-persistence"],
     { cwd: tmpdir(), stdio: ["pipe", "pipe", "pipe"] },
   );
-  child.stdin.end(buildPrompt(profile, trackedCompanies(), today));
+  child.stdin.end(buildPrompt(profile, trackedCompanies(), today, settings));
   const used = { searches: 0, fetches: 0 };
   let final = "";
   let stopped: string | null = null;
@@ -114,6 +114,6 @@ const companies = await addVerifiedCompanies(result.companies, (ats, slug) => fe
 
 recordRun(SOURCE, startedAt, { ok: true, fetched: result.jobs.length, kept: official.kept + board.kept, added: official.added + board.added });
 console.log(
-  `Claude search: ${result.jobs.length} jobs returned (${result.jobs.filter((j) => j.fit >= ENOUGH.fit).length} rated fit ≥ ${ENOUGH.fit}), ${official.kept + board.kept} kept (${official.added + board.added} new), ${dropped} malformed entries dropped.\n` +
+  `Claude search: ${result.jobs.length} jobs returned (${result.jobs.filter((j) => j.fit >= settings.enoughFit).length} rated fit ≥ ${settings.enoughFit}), ${official.kept + board.kept} kept (${official.added + board.added} new), ${dropped} malformed entries dropped.\n` +
     `Companies added to the daily crawl: ${companies.length ? companies.join(", ") : "none"} (of ${result.companies.length} suggested).`,
 );

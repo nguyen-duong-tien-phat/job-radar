@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { checkCvFile, extractProfile, LOCATIONS, pdfToText, ROLES } from "@/lib/cv";
 import { changedFields, DATA_DIR, db, getProfile, saveProfile } from "@/lib/db";
+import { installSchedule, removeSchedule, scheduleInstalled } from "@/lib/schedule";
+import { parseSettings, saveSettings } from "@/lib/settings";
 
 export type UploadState = { error: string | null };
 
@@ -66,4 +68,21 @@ export async function updateProfile(form: FormData): Promise<void> {
   revalidatePath("/");
   // The page lights the changed fields once, so the user sees what this save did.
   redirect(`/?saved=${changed.join(",") || "none"}`);
+}
+
+export type SettingsState = { error: string | null; savedAt: number | null };
+
+export async function saveSettingsAction(_prev: SettingsState, form: FormData): Promise<SettingsState> {
+  const raw = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]));
+  const [hh, mm] = (raw.runTime ?? "").split(":");
+  const settings = parseSettings({ ...raw, runHour: hh, runMinute: mm });
+  saveSettings(settings);
+  try {
+    if (raw.autoRun === "on") installSchedule(settings.runHour, settings.runMinute);
+    else if (scheduleInstalled()) removeSchedule();
+  } catch (e) {
+    return { error: `Đã lưu cài đặt, nhưng chưa cài được lịch chạy: ${e instanceof Error ? e.message : String(e)}`, savedAt: null };
+  }
+  revalidatePath("/", "layout");
+  return { error: null, savedAt: Date.now() };
 }
