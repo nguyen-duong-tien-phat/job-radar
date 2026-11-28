@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Profile } from "@/lib/db";
 import { lastCrawlAt, latestRunStart, rankedJobs, type Sort, SORTS, sortJobs } from "@/lib/score";
 import { runningPid } from "@/lib/run";
+import { scheduleInstalled } from "@/lib/schedule";
 import { getSettings, MODELS, RANGES } from "@/lib/settings";
 import { ago, sourceName, updatedAt } from "@/lib/ui";
 import { RunButton } from "./run-button";
@@ -12,12 +13,35 @@ const COLS = "grid-cols-[3rem_minmax(0,1fr)] @3xl:grid-cols-[3.5rem_minmax(0,1fr
 
 const list = (skills: string[], max = 5) => skills.slice(0, max).join(", ") + (skills.length > max ? ` +${skills.length - max}` : "");
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** Automatic mode: when the next run happens, instead of the "Find jobs" button. */
+function ScheduleInfo({ hour, minute, everyDays, installed }: { hour: number; minute: number; everyDays: number; installed: boolean }) {
+  if (!installed) {
+    return <p className="text-sm text-alert">Schedule not installed</p>;
+  }
+  const next = new Date();
+  next.setHours(hour, minute, 0, 0);
+  if (next.getTime() <= Date.now()) next.setDate(next.getDate() + 1);
+  const day = next.toDateString() === new Date().toDateString() ? "today" : "tomorrow";
+  return (
+    <p className="flex h-9 items-center gap-1.5 rounded-md border border-seam-strong px-3 text-[13px] text-steel">
+      Next run {day}
+      <span className="figure text-paper">
+        {pad(hour)}:{pad(minute)}
+      </span>
+      · web search every <span className="figure">{everyDays}</span>d
+    </p>
+  );
+}
+
 export function JobBoard({ profile, sort, className = "" }: { profile: Profile; sort: Sort; className?: string }) {
   const jobs = sortJobs(rankedJobs(profile), sort);
   const crawled = lastCrawlAt();
   const runStart = latestRunStart();
   const settings = getSettings();
   const shown = settings.jobsShown;
+  const running = runningPid() !== null;
   // Found by the latest run; everything else was found earlier.
   const isNew = (firstSeen: string) => runStart !== null && firstSeen >= runStart;
   const newCount = jobs.filter((j) => isNew(j.first_seen)).length;
@@ -62,7 +86,11 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
           "No jobs yet"
         )}
         </p>
-        <RunButton running={runningPid() !== null} />
+        {settings.mode === "auto" && !running ? (
+          <ScheduleInfo hour={settings.runHour} minute={settings.runMinute} everyDays={settings.searchEveryDays} installed={scheduleInstalled()} />
+        ) : (
+          <RunButton running={running} />
+        )}
         <SettingsDialog settings={settings} ranges={RANGES} models={MODELS} />
       </div>
 
