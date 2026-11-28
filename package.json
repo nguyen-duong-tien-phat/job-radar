@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "crawl": "tsx scripts/crawl.mts"
+    "crawl": "tsx scripts/crawl.mts",
+    "search": "tsx scripts/claude-search.mts"
   },
   "dependencies": {
     "next": "16.4.6",

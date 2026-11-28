@@ -1,0 +1,44 @@
+import { describe, expect, it } from "vitest";
+import { buildPrompt, toRawJob, validateResult } from "./claude-search";
+
+describe("validateResult", () => {
+  it("keeps well-formed entries and drops the rest", () => {
+    const { result, dropped } = validateResult({
+      jobs: [
+        { title: "Backend Engineer", company: "Acme", url: "https://jobs.lever.co/acme/1", official: true, location: "Hanoi", remote: false, skills: ["Go", 3], why: "Go backend" },
+        { title: "No url", company: "Acme", url: "", official: false, location: "", remote: false, skills: [], why: "" },
+        { title: "Script", company: "Evil", url: "javascript:alert(1)", official: false, location: "", remote: true, skills: [], why: "" },
+      ],
+      companies: [
+        { ats: "lever", slug: "acme", name: "Acme" },
+        { ats: "workday", slug: "acme", name: "Acme" },
+        { ats: "greenhouse", slug: "../etc", name: "Bad" },
+      ],
+    });
+    expect(result.jobs.map((j) => j.title)).toEqual(["Backend Engineer"]);
+    expect(result.jobs[0].skills).toEqual(["Go"]);
+    expect(result.companies).toEqual([{ ats: "lever", slug: "acme", name: "Acme" }]);
+    expect(dropped).toBe(4);
+  });
+
+  it("survives a reply that is not the expected shape", () => {
+    expect(validateResult("nonsense").result).toEqual({ jobs: [], companies: [] });
+  });
+});
+
+describe("toRawJob", () => {
+  it("puts skills where scoring reads them and ignores a bad date", () => {
+    const j = toRawJob({ title: "T", company: "C", url: "https://x", official: false, location: "", remote: true, skills: ["Go", "Kafka"], why: "fits", posted_at: "last week" });
+    expect(j.description).toBe("Go, Kafka\nfits");
+    expect(j.postedAt).toBeNull();
+  });
+});
+
+describe("buildPrompt", () => {
+  it("names the profile and the companies to skip", () => {
+    const p = buildPrompt({ skills: ["Go"], roles: ["backend"], locations: ["hn", "remote"], years: 4 }, ["Acme"], "2026-11-28");
+    expect(p).toContain("Skills: Go");
+    expect(p).toContain("Hanoi; remote");
+    expect(p).toContain("already tracked: Acme");
+  });
+});
