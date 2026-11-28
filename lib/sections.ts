@@ -37,3 +37,6 @@ export function splitSections(description: string): JobSections {
   }
   return out;
 }
+
+/** True when the posting gave us almost nothing to show: no sections and only a line or two of text. */
+export const unreadable = (s: JobSections) => !s.scope && !s.requirements && !s.benefits && s.about.length < 200;

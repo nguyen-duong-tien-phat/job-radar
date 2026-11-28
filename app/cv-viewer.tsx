@@ -1,11 +1,49 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-/** "View" opens the stored PDF in a modal on the page; the frame loads only when opened. */
+/**
+ * "View" opens the stored PDF in a modal on the page. Pages are drawn to canvases at the modal's width
+ * (pdf.js via unpdf), so the CV reads the same in Safari and Chrome instead of in each browser's small embedded viewer.
+ */
 export function CvViewer({ id, fileName }: { id: number; fileName: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const pages = useRef<HTMLDivElement>(null);
   const [opened, setOpened] = useState(false);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    const box = pages.current;
+    if (!opened || !box) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { getDocumentProxy } = await import("unpdf");
+        const bytes = new Uint8Array(await (await fetch(`/cv/${id}`)).arrayBuffer());
+        const pdf = await getDocumentProxy(bytes);
+        box.replaceChildren();
+        const width = box.clientWidth;
+        for (let n = 1; n <= pdf.numPages && !cancelled; n++) {
+          const page = await pdf.getPage(n);
+          const scale = (width / page.getViewport({ scale: 1 }).width) * window.devicePixelRatio;
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement("canvas");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.className = "block w-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.25)]";
+          canvas.setAttribute("aria-label", `Page ${n}`);
+          box.append(canvas);
+          await page.render({ canvas, canvasContext: canvas.getContext("2d")!, viewport }).promise;
+        }
+        if (!cancelled) setStatus("ready");
+      } catch {
+        if (!cancelled) setStatus("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [opened, id]);
 
   return (
     <>
@@ -22,7 +60,7 @@ export function CvViewer({ id, fileName }: { id: number; fileName: string }) {
       <dialog
         ref={dialog}
         aria-label={fileName}
-        className="m-auto h-[calc(100dvh-2rem)] w-[min(60rem,calc(100vw-2rem))] max-h-none flex-col rounded-md border border-seam-strong bg-slate p-0 text-paper backdrop:bg-black/60 open:flex"
+        className="m-auto h-[calc(100dvh-2rem)] max-h-none w-[min(60rem,calc(100vw-2rem))] flex-col rounded-md border border-seam-strong bg-slate p-0 text-paper backdrop:bg-black/60 open:flex"
       >
         <div className="flex items-center gap-4 px-5 py-3">
           <h2 className="min-w-0 flex-1 truncate font-semibold">{fileName}</h2>
@@ -35,7 +73,18 @@ export function CvViewer({ id, fileName }: { id: number; fileName: string }) {
             </svg>
           </button>
         </div>
-        {opened && <iframe src={`/cv/${id}`} title={fileName} className="min-h-0 w-full flex-1 border-t border-seam bg-white" />}
+        <div className="min-h-0 flex-1 overflow-y-auto border-t border-seam bg-seam/40 p-4">
+          {status === "loading" && <p className="text-sm text-steel">Loading…</p>}
+          {status === "error" && (
+            <p className="text-sm text-alert">
+              Could not show this PDF.{" "}
+              <a href={`/cv/${id}?download=1`} className="underline underline-offset-4">
+                Download it
+              </a>
+            </p>
+          )}
+          <div ref={pages} className="mx-auto flex max-w-[52rem] flex-col gap-4" />
+        </div>
       </dialog>
     </>
   );

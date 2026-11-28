@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { Scored } from "@/lib/score";
-import type { JobSections } from "@/lib/sections";
+import { type JobSections, unreadable } from "@/lib/sections";
 import { ago, buttonPrimary, buttonSecondary, sourceName } from "@/lib/ui";
 import { setSavedAction } from "./actions";
 
@@ -128,6 +128,13 @@ export function JobDetail() {
                     {k}
                   </span>
                 ))}
+              </div>
+            )}
+            {unreadable(s) && (
+              <div className="border-t border-seam px-5 py-6">
+                <p className="rounded-md border border-dashed border-warm/60 bg-warm-dim px-4 py-3 text-sm text-warm">
+                  Couldn’t read the details of this posting. Open the original to see them.
+                </p>
               </div>
             )}
             <Block title="Scope" text={s.scope} />

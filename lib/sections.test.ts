@@ -22,3 +22,12 @@ describe("splitSections", () => {
     expect(splitSections("Just a paragraph.\nAnother line.")).toEqual({ about: "Just a paragraph.\nAnother line.", scope: "", requirements: "", benefits: "" });
   });
 });
+
+describe("unreadable", () => {
+  it("flags postings with no sections and almost no text", async () => {
+    const { unreadable } = await import("./sections");
+    expect(unreadable(splitSections("Địa điểm: Hà Nội"))).toBe(true);
+    expect(unreadable(splitSections("Requirements\n- Go"))).toBe(false);
+    expect(unreadable(splitSections("x".repeat(300)))).toBe(false);
+  });
+});

@@ -18,6 +18,7 @@ import { companyCount, lastSearchTokens } from "@/lib/claude-search";
 import { getSettings, MODELS, RANGES } from "@/lib/settings";
 import { ago, nextRunDay, sourceName, updatedAt } from "@/lib/ui";
 import { JobDetail, JobRowButton } from "./job-detail";
+import { splitSections, unreadable } from "@/lib/sections";
 import { BoardSearch } from "./board-search";
 import { RunButton } from "./run-button";
 import { SaveButton } from "./save-button";
@@ -282,7 +283,7 @@ export function JobBoard({
                       )}
                       {!j.matched.length &&
                         !j.missing.length &&
-                        "No skills listed"}
+                        (unreadable(splitSections(j.description)) ? <span className="text-warm">Details unreadable</span> : "No skills listed")}
                     </span>
                   </span>
                   <span className="col-start-2 min-w-0 text-sm @3xl:col-start-auto">
