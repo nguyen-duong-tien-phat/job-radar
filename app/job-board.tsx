@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Profile } from "@/lib/db";
-import { lastCrawlAt, latestRunStart, rankedJobs, type Sort, SORTS, sortJobs } from "@/lib/score";
+import { type Filter, FILTERS, filterJobs, lastCrawlAt, latestRunStart, rankedJobs, type Sort, SORTS, sortJobs } from "@/lib/score";
 import { runningPid } from "@/lib/run";
 import { scheduleInstalled } from "@/lib/schedule";
 import { companyCount, lastSearchTokens } from "@/lib/claude-search";
@@ -8,6 +8,7 @@ import { getSettings, MODELS, RANGES } from "@/lib/settings";
 import { ago, nextRunDay, sourceName, updatedAt } from "@/lib/ui";
 import { JobDetail, JobRowButton } from "./job-detail";
 import { RunButton } from "./run-button";
+import { SaveButton } from "./save-button";
 import { SettingsDialog } from "./settings-dialog";
 
 // The board's own width (container query), not the viewport, decides its columns: it sits beside the profile.
@@ -41,8 +42,16 @@ function ScheduleInfo({ hour, minute, everyDays, installed }: { hour: number; mi
   );
 }
 
-export function JobBoard({ profile, sort, className = "" }: { profile: Profile; sort: Sort; className?: string }) {
-  const jobs = sortJobs(rankedJobs(profile), sort);
+/** The board URL for a sort and a filter, leaving defaults out. */
+const boardHref = (sort: Sort, filter: Filter) => {
+  const q = new URLSearchParams();
+  if (sort !== "new") q.set("sort", sort);
+  if (filter !== "all") q.set("filter", filter);
+  return q.size ? `/?${q}` : "/";
+};
+
+export function JobBoard({ profile, sort, filter, className = "" }: { profile: Profile; sort: Sort; filter: Filter; className?: string }) {
+  const all = sortJobs(rankedJobs(profile), sort);
   const crawled = lastCrawlAt();
   const runStart = latestRunStart();
   const settings = getSettings();
@@ -50,7 +59,9 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
   const running = runningPid() !== null;
   // Found by the latest run; everything else was found earlier.
   const isNew = (firstSeen: string) => runStart !== null && firstSeen >= runStart;
-  const newCount = jobs.filter((j) => isNew(j.first_seen)).length;
+  const jobs = filterJobs(all, filter, isNew);
+  const counts = Object.fromEntries((Object.keys(FILTERS) as Filter[]).map((f) => [f, filterJobs(all, f, isNew).length])) as Record<Filter, number>;
+  const newCount = counts.new;
 
   return (
     <section aria-labelledby="jobs-title" className={`@container flex min-h-0 flex-col ${className}`}>
@@ -62,7 +73,7 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
           {(Object.keys(SORTS) as Sort[]).map((s) => (
             <Link
               key={s}
-              href={s === "new" ? "/" : `/?sort=${s}`}
+              href={boardHref(s, filter)}
               scroll={false}
               aria-current={sort === s ? "true" : undefined}
               className={`rounded-md px-2.5 py-1 text-[13px] transition-colors ${sort === s ? "bg-signal-dim font-medium text-signal" : "text-steel hover:text-paper"}`}
@@ -72,9 +83,9 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
           ))}
         </nav>
         <p className="ml-auto text-sm text-steel">
-        {jobs.length ? (
+        {all.length ? (
           <>
-            <span className="figure">{jobs.length}</span> jobs
+            <span className="figure">{all.length}</span> jobs
             {newCount > 0 && (
               <>
                 {" "}
@@ -103,13 +114,34 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
         <SettingsDialog settings={settings} ranges={RANGES} models={MODELS} companies={companyCount()} lastSearchTokens={lastSearchTokens()} />
       </div>
 
-      {jobs.length === 0 ? (
+      {all.length > 0 && (
+        <nav aria-label="Filter" className="mt-3 flex flex-wrap gap-1.5">
+          {(Object.keys(FILTERS) as Filter[]).map((f) => (
+            <Link
+              key={f}
+              href={boardHref(sort, f)}
+              scroll={false}
+              aria-current={filter === f ? "true" : undefined}
+              className={`flex h-8 items-center gap-1.5 rounded-md border px-3 text-[13px] transition-colors ${
+                filter === f ? "border-paper bg-paper font-medium text-ink" : "border-seam-strong text-steel hover:border-steel hover:text-paper"
+              }`}
+            >
+              {FILTERS[f]}
+              <span className="figure text-xs opacity-70">{counts[f]}</span>
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      {all.length === 0 ? (
         <div className="mt-4 max-w-xl rounded-md border border-seam bg-slate px-6 py-6">
           <pre className="figure rounded-md border border-seam-strong px-4 py-3 text-sm">npm run crawl</pre>
         </div>
+      ) : jobs.length === 0 ? (
+        <p className="mt-4 rounded-md border border-seam bg-slate px-5 py-6 text-sm text-steel">No {FILTERS[filter].toLowerCase()} jobs.</p>
       ) : (
         <div className="relative mt-4 min-h-0 flex-1 overflow-y-auto rounded-md border border-seam bg-slate">
-          <div className={`sticky top-0 z-10 hidden gap-4 border-b border-seam bg-slate px-5 py-3 @3xl:grid ${COLS}`} aria-hidden="true">
+          <div className={`sticky top-0 z-10 hidden gap-4 border-b border-seam bg-slate py-3 pr-14 pl-5 @3xl:grid ${COLS}`} aria-hidden="true">
             <span className="caption">Score</span>
             <span className="caption">Job</span>
             <span className="caption">Company · source</span>
@@ -119,10 +151,10 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
           <ol>
             {jobs.slice(0, shown).map((j) => (
               // Rows found by an earlier run are dimmed; new ones carry a "New" tag.
-              <li key={j.id} className="border-b border-seam last:border-b-0">
+              <li key={j.id} className="relative border-b border-seam last:border-b-0">
                 <JobRowButton
                   id={j.id}
-                  className={`grid gap-x-4 gap-y-1 px-5 py-4 transition-colors hover:bg-seam/50 focus-visible:-outline-offset-2 ${COLS}`}
+                  className={`grid gap-x-4 gap-y-1 py-4 pr-14 pl-5 transition-colors hover:bg-seam/50 focus-visible:-outline-offset-2 ${COLS}`}
                 >
                   <span className="row-span-3 @3xl:row-span-1">
                     <span className={`figure inline-flex h-9 w-11 items-center justify-center rounded-md text-lg font-medium ${scoreTone(j.score)}`}>
@@ -164,6 +196,8 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
                     {!isNew(j.first_seen) && <span className="block text-xs">seen {ago(j.first_seen)}</span>}
                   </span>
                 </JobRowButton>
+                {/* Outside the row button: a button cannot hold another button. */}
+                <SaveButton id={j.id} saved={Boolean(j.saved_at)} className="absolute top-3.5 right-3" />
               </li>
             ))}
           </ol>

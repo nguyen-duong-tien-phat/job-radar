@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { Scored } from "@/lib/score";
 import type { JobSections } from "@/lib/sections";
 import { ago, buttonPrimary, buttonSecondary, sourceName } from "@/lib/ui";
+import { setSavedAction } from "./actions";
 
 type Detail = Omit<Scored, "description"> & { sections: JobSections };
 
@@ -70,6 +71,12 @@ export function JobDetail() {
   }, [router]);
 
   const s = job?.sections;
+  const saved = Boolean(job?.saved_at);
+  const toggleSaved = async () => {
+    if (!job) return;
+    setJob({ ...job, saved_at: saved ? null : new Date().toISOString() });
+    await setSavedAction(job.id, !saved);
+  };
   const hasSections = s && (s.scope || s.requirements || s.benefits);
 
   return (
@@ -133,9 +140,17 @@ export function JobDetail() {
 
       <div className="flex items-center gap-3 border-t border-seam px-5 py-4">
         {job && (
-          <a href={job.url} target="_blank" rel="noopener noreferrer" className={buttonPrimary}>
-            Open original posting
-          </a>
+          <>
+            <a href={job.url} target="_blank" rel="noopener noreferrer" className={buttonPrimary}>
+              Open original posting
+            </a>
+            <button type="button" onClick={toggleSaved} aria-pressed={saved} className={saved ? `${buttonSecondary} border-good text-good` : buttonSecondary}>
+              <svg width="12" height="14" viewBox="0 0 12 14" aria-hidden="true" className="mr-2" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
+                <path d="M1.5 1.5h9v11L6 9.5l-4.5 3z" />
+              </svg>
+              {saved ? "Saved" : "Save"}
+            </button>
+          </>
         )}
         <button type="button" onClick={() => dialog.current?.close()} className={buttonSecondary}>
           Close

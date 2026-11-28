@@ -114,6 +114,10 @@ export function recordRun(source: string, startedAt: string, r: { ok: boolean; f
     .run(source, startedAt, r.ok ? 1 : 0, r.fetched, r.kept, r.added, r.error ?? null, r.tokens ?? null);
 }
 
+export function setSaved(id: number, saved: boolean) {
+  db().prepare("UPDATE jobs SET saved_at = ? WHERE id = ?").run(saved ? new Date().toISOString() : null, id);
+}
+
 export function markViewed(id: number) {
   db().prepare("UPDATE jobs SET viewed_at = ? WHERE id = ? AND viewed_at IS NULL").run(new Date().toISOString(), id);
 }

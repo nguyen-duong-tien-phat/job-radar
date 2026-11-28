@@ -15,6 +15,7 @@ export type JobRow = {
   posted_at: string | null;
   first_seen: string;
   viewed_at: string | null;
+  saved_at: string | null;
 };
 
 export type Scored = JobRow & { score: number; matched: string[]; missing: string[] };
@@ -78,7 +79,7 @@ export function dedupe(jobs: Scored[]): Scored[] {
 /** Open jobs (not missing from 3+ complete runs), scored, one per job, best first. */
 export function rankedJobs(profile: Pick<Profile, "skills" | "locations">): Scored[] {
   // shortcut: scores every stored job in memory on each page load; fine for a few thousand jobs, move scoring into the crawl if it grows past that.
-  const rows = db().prepare("SELECT id, url, source, official, company, title, location, remote, description, salary, posted_at, first_seen, viewed_at FROM jobs WHERE missed < 3").all() as JobRow[];
+  const rows = db().prepare("SELECT id, url, source, official, company, title, location, remote, description, salary, posted_at, first_seen, viewed_at, saved_at FROM jobs WHERE missed < 3").all() as JobRow[];
   return dedupe(rows.map((r) => scoreJob(r, profile))).sort((a, b) => b.score - a.score);
 }
 
@@ -116,7 +117,22 @@ export function latestRunStart(): string | null {
 export function getJob(id: number): JobRow | null {
   return (
     (db()
-      .prepare("SELECT id, url, source, official, company, title, location, remote, description, salary, posted_at, first_seen, viewed_at FROM jobs WHERE id = ?")
+      .prepare("SELECT id, url, source, official, company, title, location, remote, description, salary, posted_at, first_seen, viewed_at, saved_at FROM jobs WHERE id = ?")
       .get(id) as JobRow | undefined) ?? null
   );
+}
+
+export const FILTERS = { all: "All", new: "New", unviewed: "Unviewed", viewed: "Viewed", saved: "Saved" } as const;
+export type Filter = keyof typeof FILTERS;
+
+/** Keeps the rows a label filter asks for; `isNew` says whether a row was found by the latest run. */
+export function filterJobs<T extends Pick<JobRow, "viewed_at" | "saved_at" | "first_seen">>(jobs: T[], filter: Filter, isNew: (firstSeen: string) => boolean): T[] {
+  const keep: Record<Filter, (j: T) => boolean> = {
+    all: () => true,
+    new: (j) => isNew(j.first_seen),
+    unviewed: (j) => !j.viewed_at,
+    viewed: (j) => Boolean(j.viewed_at),
+    saved: (j) => Boolean(j.saved_at),
+  };
+  return jobs.filter(keep[filter]);
 }

@@ -16,6 +16,7 @@ const job = (over: Partial<JobRow> = {}): JobRow => ({
   posted_at: "2026-11-27T00:00:00Z",
   first_seen: "2026-11-27T00:00:00Z",
   viewed_at: null,
+  saved_at: null,
   ...over,
 });
 const profile = { skills: ["node.js", "TypeScript", "PostgreSQL", "Docker"], locations: ["hn"] };
@@ -60,5 +61,23 @@ describe("sortJobs", () => {
     expect(sortJobs([a, b], "new").map((j) => j.id)).toEqual([2, 1]);
     expect(sortJobs([b, a], "match").map((j) => j.id)).toEqual([1, 2]);
     expect(sortJobs([b, a], "posted").map((j) => j.id)).toEqual([1, 2]);
+  });
+});
+
+describe("filterJobs", () => {
+  it("keeps rows by label", async () => {
+    const { filterJobs } = await import("./score");
+    const rows = [
+      job({ id: 1, first_seen: "2026-11-28T10:00:00Z" }),
+      job({ id: 2, viewed_at: "2026-11-28T11:00:00Z" }),
+      job({ id: 3, saved_at: "2026-11-28T12:00:00Z", viewed_at: "2026-11-28T12:00:00Z" }),
+    ];
+    const isNew = (f: string) => f >= "2026-11-28T00:00:00Z";
+    const ids = (f: Parameters<typeof filterJobs>[1]) => filterJobs(rows, f, isNew).map((j) => j.id);
+    expect(ids("all")).toEqual([1, 2, 3]);
+    expect(ids("new")).toEqual([1]);
+    expect(ids("unviewed")).toEqual([1]);
+    expect(ids("viewed")).toEqual([2, 3]);
+    expect(ids("saved")).toEqual([3]);
   });
 });

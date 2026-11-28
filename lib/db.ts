@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS jobs (
   first_seen TEXT NOT NULL,
   last_seen TEXT NOT NULL,
   missed INTEGER NOT NULL DEFAULT 0, -- complete-list runs in a row that did not return it
-  viewed_at TEXT                     -- when the owner opened the posting from the board
+  viewed_at TEXT,                    -- when the owner opened the job's detail
+  saved_at TEXT                      -- when the owner saved the job
 );
 CREATE INDEX IF NOT EXISTS jobs_source ON jobs (source);
 
@@ -84,6 +85,7 @@ export function db(): DatabaseSync {
     };
     addColumn("crawl_runs", "tokens", "INTEGER");
     addColumn("jobs", "viewed_at", "TEXT");
+    addColumn("jobs", "saved_at", "TEXT");
     g.jobRadarDb = conn;
   }
   return g.jobRadarDb;
