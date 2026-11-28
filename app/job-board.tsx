@@ -93,7 +93,10 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
         )}
         </p>
         {settings.mode === "auto" && !running ? (
-          <ScheduleInfo hour={settings.runHour} minute={settings.runMinute} everyDays={settings.disabledSources.includes("claude-search") ? null : settings.searchEveryDays} installed={scheduleInstalled()} />
+          <>
+            <ScheduleInfo hour={settings.runHour} minute={settings.runMinute} everyDays={settings.disabledSources.includes("claude-search") ? null : settings.searchEveryDays} installed={scheduleInstalled()} />
+            <RunButton running={false} label="Run now" secondary />
+          </>
         ) : (
           <RunButton running={running} />
         )}
