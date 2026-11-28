@@ -112,3 +112,11 @@ export function latestRunStart(): string | null {
   const from = new Date(Date.parse(last) - 3_600_000).toISOString();
   return (db().prepare("SELECT MIN(started_at) AS at FROM crawl_runs WHERE ok = 1 AND started_at >= ?").get(from) as { at: string }).at;
 }
+
+export function getJob(id: number): JobRow | null {
+  return (
+    (db()
+      .prepare("SELECT id, url, source, official, company, title, location, remote, description, salary, posted_at, first_seen, viewed_at FROM jobs WHERE id = ?")
+      .get(id) as JobRow | undefined) ?? null
+  );
+}

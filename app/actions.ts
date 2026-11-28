@@ -5,7 +5,6 @@ import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { checkCvFile, extractProfile, LOCATIONS, pdfToText, ROLES } from "@/lib/cv";
 import { addCv, changedFields, cvPath, getProfile, saveProfile } from "@/lib/db";
-import { markViewed } from "@/lib/jobs";
 import { startRun } from "@/lib/run";
 import { installSchedule, removeSchedule, scheduleInstalled } from "@/lib/schedule";
 import { parseSettings, saveSettings } from "@/lib/settings";
@@ -99,11 +98,5 @@ export async function saveSettingsAction(_prev: SettingsState, form: FormData): 
 
 export async function startRunAction(): Promise<void> {
   startRun();
-  revalidatePath("/");
-}
-
-export async function markViewedAction(id: number): Promise<void> {
-  if (!Number.isInteger(id)) return;
-  markViewed(id);
   revalidatePath("/");
 }

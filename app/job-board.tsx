@@ -6,7 +6,7 @@ import { scheduleInstalled } from "@/lib/schedule";
 import { companyCount, lastSearchTokens } from "@/lib/claude-search";
 import { getSettings, MODELS, RANGES } from "@/lib/settings";
 import { ago, nextRunDay, sourceName, updatedAt } from "@/lib/ui";
-import { JobLink } from "./job-link";
+import { JobDetail, JobRowButton } from "./job-detail";
 import { RunButton } from "./run-button";
 import { SettingsDialog } from "./settings-dialog";
 
@@ -27,9 +27,9 @@ function ScheduleInfo({ hour, minute, everyDays, installed }: { hour: number; mi
   }
   const day = nextRunDay(hour, minute);
   return (
-    <p className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-seam-strong px-3 text-[13px] whitespace-nowrap text-steel">
+    <p className="flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-signal px-4 text-sm font-semibold whitespace-nowrap text-ink">
       Auto {day}
-      <span className="figure text-paper">
+      <span className="figure">
         {pad(hour)}:{pad(minute)}
       </span>
       {everyDays !== null && (
@@ -117,9 +117,8 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
             {jobs.slice(0, shown).map((j) => (
               // Rows found by an earlier run are dimmed; new ones carry a "New" tag.
               <li key={j.id} className="border-b border-seam last:border-b-0">
-                <JobLink
+                <JobRowButton
                   id={j.id}
-                  href={j.url}
                   className={`grid gap-x-4 gap-y-1 px-5 py-4 transition-colors hover:bg-seam/50 focus-visible:-outline-offset-2 ${COLS}`}
                 >
                   <span className="row-span-3 @3xl:row-span-1">
@@ -161,7 +160,7 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
                     <span className="figure block">{ago(j.posted_at ?? j.first_seen)}</span>
                     {!isNew(j.first_seen) && <span className="block text-xs">seen {ago(j.first_seen)}</span>}
                   </span>
-                </JobLink>
+                </JobRowButton>
               </li>
             ))}
           </ol>
@@ -172,6 +171,7 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
           )}
         </div>
       )}
+      <JobDetail />
     </section>
   );
 }

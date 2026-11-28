@@ -114,6 +114,21 @@ export function SettingsDialog({
     </Row>
   );
 
+  // A number filled into the Claude sentence.
+  const blank = (name: keyof typeof ranges, label: string) => (
+    <input
+      name={name}
+      aria-label={label}
+      type="number"
+      inputMode="numeric"
+      required
+      min={ranges[name][0]}
+      max={ranges[name][1]}
+      defaultValue={s[name]}
+      className="figure inline-block h-8 w-14 rounded-md border border-seam-strong bg-transparent px-2 text-center align-middle text-sm hover:border-steel focus:border-signal focus:outline-none"
+    />
+  );
+
   const radios = (name: string, options: [string, string][], value: string) => (
     <div role="radiogroup" aria-label={name} className="flex gap-1.5">
       {options.map(([v, label]) => (
@@ -290,12 +305,14 @@ export function SettingsDialog({
                 )}
               </Section>
               <Section title="Claude web search" hidden={!claudeOn}>
-                <Row label="Model" htmlFor="set-model">
+                {/* Read as the instruction Claude gets, with the numbers as blanks to fill. */}
+                <p className="py-2 text-[15px] leading-[2.6]">
+                  Using{" "}
                   <select
-                    id="set-model"
                     name="model"
+                    aria-label="Model"
                     defaultValue={s.model}
-                    className="select h-9 rounded-md border border-seam-strong bg-slate pr-8 pl-2.5 text-sm hover:border-steel focus:border-signal focus:outline-none"
+                    className="select inline-block h-9 rounded-md border border-seam-strong bg-slate pr-8 pl-2.5 align-middle text-sm hover:border-steel focus:border-signal focus:outline-none"
                   >
                     {Object.entries(models).map(([id, label]) => (
                       <option key={id} value={id}>
@@ -303,12 +320,10 @@ export function SettingsDialog({
                       </option>
                     ))}
                   </select>
-                </Row>
-                {num("searches", "Max searches")}
-                {num("fetches", "Max pages read")}
-                {num("maxJobs", "Max jobs returned")}
-                {num("enoughJobs", "Stop early at (jobs)")}
-                {num("enoughFit", "… with fit of at least (/10)")}
+                  , search the web at most {blank("searches", "Max searches")} times and read at most {blank("fetches", "Max pages read")} pages. Return up to{" "}
+                  {blank("maxJobs", "Max jobs returned")} jobs, and stop as soon as {blank("enoughJobs", "Stop early at jobs")} jobs fit my CV at least{" "}
+                  {blank("enoughFit", "Minimum fit out of 10")}/10.
+                </p>
               </Section>
             </div>
           </div>

@@ -97,6 +97,11 @@ describe("JobPosting JSON-LD", () => {
     });
   });
 
+  it("adds skills, experience and benefits from their own schema fields", () => {
+    const html = `<script type="application/ld+json">{"@type":"JobPosting","title":"AI Engineer","description":"<p>Build models</p>","skills":"Python, NLP","experienceRequirements":{"monthsOfExperience":24},"jobBenefits":"<ul><li>13th month</li></ul>","hiringOrganization":{"name":"X"}}</script>`;
+    expect(parseJobPostingLd(html, "u")?.description).toBe("Build models\nRequirements\nSkills: Python, NLP\nExperience: 2+ years\nBenefits\n- 13th month");
+  });
+
   it("returns null for a page without job data", () => {
     expect(parseJobPostingLd("<html><body>empty</body></html>", "u")).toBeNull();
   });

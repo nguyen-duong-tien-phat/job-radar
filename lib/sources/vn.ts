@@ -2,6 +2,7 @@
 // through the board's search page or sitemap. Rules per source (robots, pacing, terms): docs/sources.md.
 import { getGzipText, getText } from "../http";
 import { htmlToText, type RawJob } from "../jobs";
+import { splitSections } from "../sections";
 
 type Ld = Record<string, unknown>;
 
@@ -46,13 +47,22 @@ export function parseJobPostingLd(html: string, pageUrl: string): RawJob | null 
         })
         .filter(Boolean)
         .join("; ");
+      // Some boards put requirements and benefits in their own schema fields; add them under headings the
+      // detail view understands, unless the description already has that section.
+      let description = htmlToText(str(n.description));
+      const has = splitSections(description);
+      const months = Number(((n.experienceRequirements ?? {}) as Ld).monthsOfExperience);
+      const requirements = [str(n.qualifications) && htmlToText(str(n.qualifications)), str(n.skills) && `Skills: ${str(n.skills)}`, months > 0 && `Experience: ${Math.round(months / 12)}+ years`].filter(Boolean);
+      if (str(n.responsibilities) && !has.scope) description += `\nResponsibilities\n${htmlToText(str(n.responsibilities))}`;
+      if (requirements.length && !has.requirements) description += `\nRequirements\n${requirements.join("\n")}`;
+      if (str(n.jobBenefits) && !has.benefits) description += `\nBenefits\n${htmlToText(str(n.jobBenefits))}`;
       return {
         url: pageUrl,
         title: htmlToText(str(n.title)),
         company: str(((n.hiringOrganization ?? {}) as Ld).name),
         location: location || "Việt Nam",
         remote: n.jobLocationType === "TELECOMMUTE",
-        description: htmlToText(str(n.description)),
+        description,
         salary: salaryText(n.baseSalary),
         postedAt: str(n.datePosted) || null,
       };
