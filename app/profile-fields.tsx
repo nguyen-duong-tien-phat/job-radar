@@ -27,8 +27,7 @@ export function Segment({ caption, htmlFor, lit, children, className = "" }: { c
 /** Checkbox toggles. Selected reads as paper on slate; any toggle that differs from the saved profile lights the accent. */
 export function Toggles({ name, label, options, checked }: { name: string; label: string; options: Record<string, string>; checked: string[] }) {
   return (
-    <fieldset>
-      <legend className="sr-only">{label}</legend>
+    <div role="group" aria-label={label}>
       <div className="flex flex-wrap gap-1.5">
         {Object.entries(options).map(([value, text]) => {
           const wasOn = checked.includes(value);
@@ -51,6 +50,6 @@ export function Toggles({ name, label, options, checked }: { name: string; label
           );
         })}
       </div>
-    </fieldset>
+    </div>
   );
 }

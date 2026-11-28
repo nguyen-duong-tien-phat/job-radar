@@ -5,7 +5,7 @@ import { CvViewer } from "./cv-viewer";
 import { ProfileDialog } from "./profile-dialog";
 import { FIELD_NAMES, Segment } from "./profile-fields";
 
-const chip = "rounded-md border border-seam-strong px-2 py-0.5 text-[13px]";
+const chip = "rounded-md bg-cool-dim px-2 py-0.5 text-[13px] text-cool";
 const link = "text-steel underline-offset-4 hover:text-paper hover:underline";
 
 function CvRow({ cv }: { cv: CvFile }) {
