@@ -53,7 +53,7 @@ export const RESULT_SCHEMA = {
 
 const LOCATION_NAMES: Record<string, string> = { hcm: "Ho Chi Minh City", hn: "Hanoi", dn: "Da Nang", remote: "remote (open to someone living in Vietnam)" };
 
-export type SearchLimits = Pick<Settings, "searches" | "fetches" | "maxJobs" | "enoughJobs" | "enoughFit">;
+export type SearchLimits = Pick<Settings, "searches" | "fetches" | "maxJobs" | "enoughJobs" | "enoughFit" | "searchTerms">;
 
 export function buildPrompt(profile: Pick<Profile, "skills" | "roles" | "locations" | "years">, companies: string[], known: string[], today: string, limits: SearchLimits): string {
   return `You are searching the web for IT job openings for one developer. Today is ${today}.
@@ -64,6 +64,7 @@ Developer profile:
 - Experience: ${profile.years ?? "unknown"} years
 - Wanted locations: ${profile.locations.map((l) => LOCATION_NAMES[l] ?? l).join("; ") || "Vietnam or remote"}
 
+${limits.searchTerms ? `- Focus this search on: ${limits.searchTerms}\n` : ""}
 Task:
 1. Find currently open jobs that fit this profile, posted in the last 30 days, in Vietnam or fully remote and open to someone in Vietnam.
 2. Prefer the company's own career page (its site, or its Greenhouse, Lever, Ashby or SmartRecruiters board) over job boards. Mark official=true only when the url is on the company's own site or its applicant-tracking board.

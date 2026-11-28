@@ -20,10 +20,17 @@ const BOARDS: Source[] = [
   { name: "arbeitnow", official: false, complete: false, fetch: fetchArbeitnow }, // first page only
   { name: "weworkremotely", official: false, complete: true, fetch: fetchWwr },
   { name: "hn-hiring", official: false, complete: true, fetch: fetchHn },
-  { name: "topdev", official: false, complete: false, fetch: fetchTopDev },
+  { name: "topdev", official: false, complete: false, fetch: () => fetchTopDev(searchTerms()) },
   { name: "vieclam24h", official: false, complete: false, fetch: fetchVieclam24h },
   { name: "careerlink", official: false, complete: false, fetch: fetchCareerLink },
 ];
+
+const searchTerms = () =>
+  getSettings()
+    .searchTerms.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 5);
 
 export function addCompany(ats: Ats, slug: string, name: string) {
   db().prepare("INSERT OR IGNORE INTO companies (ats, slug, name, added_at) VALUES (?, ?, ?, ?)").run(ats, slug, name, new Date().toISOString());

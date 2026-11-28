@@ -136,3 +136,13 @@ export function filterJobs<T extends Pick<JobRow, "viewed_at" | "saved_at" | "fi
   };
   return jobs.filter(keep[filter]);
 }
+
+/** Board text search: every word must appear in the title, company, location or skills (accents ignored). */
+export function searchJobs<T extends Scored>(jobs: T[], q: string): T[] {
+  const words = fold(q).split(/\s+/).filter(Boolean);
+  if (!words.length) return jobs;
+  return jobs.filter((j) => {
+    const hay = fold(`${j.title} ${j.company} ${j.location} ${j.matched.join(" ")} ${j.missing.join(" ")}`);
+    return words.every((w) => hay.includes(w));
+  });
+}

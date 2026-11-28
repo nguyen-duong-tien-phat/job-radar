@@ -12,6 +12,7 @@ describe("parseSettings", () => {
     expect(parseSettings({ model: "gpt-5" }).model).toBe(DEFAULTS.model);
     expect(parseSettings({ disabledSources: '["topdev","nope"]' }).disabledSources).toEqual(["topdev"]);
     expect(parseSettings({ disabledSources: ["claude-search"] }).disabledSources).toEqual(["claude-search"]);
+    expect(parseSettings({ searchTerms: "  golang,\n fintech " }).searchTerms).toBe("golang,  fintech");
   });
 });
 

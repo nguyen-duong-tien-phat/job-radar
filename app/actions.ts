@@ -8,7 +8,7 @@ import { addCv, changedFields, cvPath, getProfile, saveProfile } from "@/lib/db"
 import { setSaved } from "@/lib/jobs";
 import { startRun } from "@/lib/run";
 import { installSchedule, removeSchedule, scheduleInstalled } from "@/lib/schedule";
-import { parseSettings, saveSettings } from "@/lib/settings";
+import { getSettings, parseSettings, saveSettings } from "@/lib/settings";
 import { SOURCE_NAMES } from "@/lib/ui";
 
 export type UploadState = { error: string | null; done: number | null };
@@ -85,7 +85,8 @@ export async function saveSettingsAction(_prev: SettingsState, form: FormData): 
   const [hh, mm] = (raw.runTime ?? "").split(":");
   const enabled = new Set(form.getAll("source").map(String));
   const disabledSources = Object.keys(SOURCE_NAMES).filter((k) => !enabled.has(k));
-  const settings = parseSettings({ ...raw, runHour: hh, runMinute: mm, disabledSources });
+  // The search terms are set next to the run button, not in this form.
+  const settings = parseSettings({ ...raw, runHour: hh, runMinute: mm, disabledSources, searchTerms: getSettings().searchTerms });
   saveSettings(settings);
   try {
     if (settings.mode === "auto") installSchedule(settings.runHour, settings.runMinute);
@@ -97,7 +98,12 @@ export async function saveSettingsAction(_prev: SettingsState, form: FormData): 
   return { error: null, savedAt: Date.now() };
 }
 
-export async function startRunAction(): Promise<void> {
+export async function startRunAction(form: FormData): Promise<void> {
+  const terms = form.get("terms");
+  if (typeof terms === "string") {
+    const current = getSettings();
+    saveSettings(parseSettings({ ...current, disabledSources: current.disabledSources, searchTerms: terms }));
+  }
   startRun();
   revalidatePath("/");
 }

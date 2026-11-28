@@ -19,6 +19,8 @@ export type Settings = {
   enoughFit: number;
   /** Keys of SOURCE_NAMES that are turned off. */
   disabledSources: string[];
+  /** Extra keywords for finding jobs (TopDev search and the Claude prompt), comma separated. */
+  searchTerms: string;
 };
 
 export const DEFAULTS: Settings = {
@@ -35,10 +37,11 @@ export const DEFAULTS: Settings = {
   enoughJobs: 5,
   enoughFit: 9,
   disabledSources: [],
+  searchTerms: "",
 };
 
 /** Allowed range for every number, used by the form and by validation. */
-export const RANGES: Record<Exclude<keyof Settings, "theme" | "mode" | "model" | "disabledSources">, [number, number]> = {
+export const RANGES: Record<Exclude<keyof Settings, "theme" | "mode" | "model" | "disabledSources" | "searchTerms">, [number, number]> = {
   jobsShown: [20, 500],
   runHour: [0, 23],
   runMinute: [0, 59],
@@ -61,6 +64,7 @@ export function parseSettings(raw: Record<string, unknown>): Settings {
   const s: Settings = { ...DEFAULTS };
   if (raw.theme === "light" || raw.theme === "dark") s.theme = raw.theme;
   if (raw.mode === "manual" || raw.mode === "auto") s.mode = raw.mode;
+  if (typeof raw.searchTerms === "string") s.searchTerms = raw.searchTerms.replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 100);
   // Stored as JSON; from the form it arrives as an array.
   let off: unknown = raw.disabledSources;
   if (typeof off === "string") {

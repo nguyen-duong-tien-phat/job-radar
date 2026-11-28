@@ -127,10 +127,11 @@ const withTopdevSections = (job: RawJob, html: string): RawJob => {
 
 const TOPDEV_KEYWORDS = ["", "nodejs", "java", "python", "php", "react", "golang", "devops", "tester", "mobile", "data"];
 
-export async function fetchTopDev(): Promise<RawJob[]> {
+/** `extra`: the owner's search keywords, searched first. */
+export async function fetchTopDev(extra: string[] = []): Promise<RawJob[]> {
   const urls: string[] = [];
-  for (const k of TOPDEV_KEYWORDS) {
-    const html = await getText(`https://topdev.vn/jobs/search${k ? `?keyword=${k}` : ""}`, { gapMs: 1500 });
+  for (const k of [...extra, ...TOPDEV_KEYWORDS]) {
+    const html = await getText(`https://topdev.vn/jobs/search${k ? `?keyword=${encodeURIComponent(k)}` : ""}`, { gapMs: 1500 });
     for (const m of html.matchAll(/detail-jobs\/[a-z0-9-]+-\d+/g)) urls.push(`https://topdev.vn/${m[0]}`);
   }
   return readPages(newestFirst(urls), 80, 1500, 5, getText, withTopdevSections);

@@ -81,3 +81,14 @@ describe("filterJobs", () => {
     expect(ids("saved")).toEqual([3]);
   });
 });
+
+describe("searchJobs", () => {
+  it("matches every word in title, company, location or skills, ignoring accents", async () => {
+    const { searchJobs } = await import("./score");
+    const a = scoreJob(job({ id: 1, title: "Backend Engineer", company: "Acme", location: "Hà Nội" }), profile, now);
+    const b = scoreJob(job({ id: 2, title: "QA Tester", company: "Beta", location: "TP.HCM", description: "Selenium" }), profile, now);
+    expect(searchJobs([a, b], "ha noi backend").map((j) => j.id)).toEqual([1]);
+    expect(searchJobs([a, b], "selenium").map((j) => j.id)).toEqual([2]);
+    expect(searchJobs([a, b], "  ").map((j) => j.id)).toEqual([1, 2]);
+  });
+});
