@@ -31,7 +31,7 @@ export async function uploadCv(_prev: UploadState, form: FormData): Promise<Uplo
   const found = extractProfile(text);
   const old = getProfile();
   saveProfile({ cvText: text, ...found, minSalaryUsd: old?.minSalaryUsd ?? null });
-  redirect("/profile");
+  redirect("/");
 }
 
 const pickKnown = (values: FormDataEntryValue[], known: object) =>
@@ -63,7 +63,7 @@ export async function updateProfile(form: FormData): Promise<void> {
   };
   const changed = changedFields(current, next);
   saveProfile({ cvText: current.cvText, ...next });
-  revalidatePath("/profile");
+  revalidatePath("/");
   // The page lights the changed fields once, so the user sees what this save did.
-  redirect(`/profile?saved=${changed.join(",") || "none"}`);
+  redirect(`/?saved=${changed.join(",") || "none"}`);
 }

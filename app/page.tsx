@@ -1,5 +1,6 @@
 import { getProfile } from "@/lib/db";
 import { JobBoard } from "./job-board";
+import { ProfilePanel } from "./profile-panel";
 import { UploadForm } from "./upload-form";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +11,18 @@ const STEPS = [
   ["Tìm job mỗi ngày", "Từ trang tuyển dụng của công ty và các trang IT, xếp theo độ hợp."],
 ] as const;
 
-export default function Home() {
+export default async function Home({ searchParams }: PageProps<"/">) {
   const profile = getProfile();
-  if (profile) return <JobBoard profile={profile} />;
+  if (profile) {
+    const { saved } = await searchParams;
+    return (
+      // Desktop: one screen, each column scrolls on its own. Phone: stacked, jobs first.
+      <main className="mx-auto grid w-full max-w-[90rem] gap-6 px-4 py-6 sm:px-8 lg:h-[calc(100dvh-3.5rem-1px)] lg:grid-cols-[22rem_minmax(0,1fr)] lg:overflow-hidden">
+        <ProfilePanel profile={profile} saved={typeof saved === "string" ? saved : undefined} className="order-last lg:order-none lg:overflow-y-auto lg:pr-1" />
+        <JobBoard profile={profile} className="max-lg:max-h-[80dvh]" />
+      </main>
+    );
+  }
   return (
     <main className="mx-auto grid w-full max-w-6xl content-start gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[1fr_1.15fr] lg:gap-x-20 lg:py-24">
       <div className="lg:col-start-1 lg:row-start-1">

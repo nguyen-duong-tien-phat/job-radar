@@ -136,7 +136,7 @@ The signature behavior: a value that differs from what is saved, or that just go
 A near-black evening palette of cool neutrals with a single warm signal.
 
 ### Primary
-- **Signal Yellow** (#f2c230): the only accent. Primary button fill, the active nav underline, focus outlines, text caret, selection, and every "changed / new / just saved" state (lit captions, new skill chips, edited figures, newly toggled options).
+- **Signal Yellow** (#f2c230): the only accent. Primary button fill, focus outlines, text caret, selection, and every "changed / new / just saved" state (lit captions, new skill chips, edited figures, newly toggled options).
 - **Signal Bright** (#ffd24d): hover fill of the primary button only.
 - **Signal Dim** (#3a3116): background of the saved-status note, behind Signal Yellow text.
 
@@ -179,7 +179,7 @@ A near-black evening palette of cool neutrals with a single warm signal.
 
 ## Layout
 
-A single centered column, max 72rem (max-w-6xl), with 16px side gutters on mobile and 32px from sm up. Header is a 56px bar under a hairline: brand left, a single nav link with a 2px signal underline for the current page, and a steel status line with mono figures on the right.
+With a profile, the app is one screen: max 90rem, a 22rem profile pass on the left and the job board on the right, each scrolling on its own inside the viewport (lg and up). Below lg they stack, board first, profile after; the board switches its row layout by its own width (container query at 48rem). Before a CV exists, the upload page is a two-column 1:1.15 split, max 72rem. Gutters: 16px on mobile, 32px from sm up. Header is a 56px bar under a hairline with the brand only.
 
 Two-column split on large screens uses a 1 : 1.15 ratio with an 80px column gap (first-run hero and the replace-CV section); it stacks below lg. Vertical rhythm steps through 8 / 16 / 24 / 40 / 64px: 40px between heading block and the pass, 64px before the replace-CV section. Lists are rows separated by hairlines, with a fixed 2.5rem mono index column.
 
@@ -226,7 +226,7 @@ Compact and solid; one yellow per screen.
 - **Drop zone (stub):** dashed Strong Seam border, caption plus prompt plus steel hint; the large first-run version sits on slate with a dashed three-cell footer of facts. Chosen file turns the border and filename signal; error turns the border Alert Coral.
 
 ### Navigation
-- **Style:** 56px header bar under a Seam hairline. Brand in semibold with slight tracking; nav links 14px paper, the current page carries a 2px signal bottom border flush with the hairline. Right side holds a 13px steel status line with mono figures; its leading words hide below sm.
+- **Style:** 56px header bar under a Seam hairline with the brand in semibold, slight tracking. No nav: profile and jobs share one screen.
 
 ### Saved Status
 A small Signal Dim note with Signal Yellow text, top right of the page heading, naming what was saved.
