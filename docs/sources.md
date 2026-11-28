@@ -6,6 +6,15 @@ First review 2026-11-27 (M0), updated the same day after M4. The **robots** colu
 
 Status values: **implemented** (adapter + tests in `scraper/jobradar/sources/`), **blocked** (the site refuses this client), **excluded** (robots.txt forbids it), **todo**.
 
+## v2 status (2026-11-28)
+
+The v2 crawler (`lib/sources/`, run with `npm run crawl`) reads: company ATS boards (Greenhouse, Lever, Ashby, SmartRecruiters), RemoteOK, Arbeitnow, We Work Remotely, HN "Who is hiring", TopDev, Vieclam24h, CareerLink. User-Agent `job-radar/0.2 (personal, non-commercial job search)`, at least 1 s between requests to one host (CareerLink 2 s).
+
+- **Company ATS boards** (official career pages): public JSON, no key. Greenhouse `boards-api.greenhouse.io/v1/boards/{slug}/jobs`, Lever `api.lever.co/v0/postings/{slug}`, Ashby `api.ashbyhq.com/posting-api/job-board/{slug}`, SmartRecruiters `api.smartrecruiters.com/v1/companies/{slug}/postings` (Vietnam only, details for at most 40 technical titles per run). Workable is not implemented: its public widget endpoint returned 404 when checked.
+- **ITviec, Indeed**: blocked. Both answer this client with a Cloudflare challenge (403, checked again 2026-11-28). Not bypassed. They can only appear as links found by the daily web search.
+- **CareerViet**: readable, but not read. Its terms forbid "browsers, spiders, robots … to navigate or search" the site (see below). Enabling it is the owner's decision.
+- **CareerLink**: still returns a generic empty page after a burst; the crawler stops after 5 empty pages in a row.
+
 ## International (intl)
 
 | Source | Status | Method | robots | ToS | Notes |
@@ -26,7 +35,7 @@ Checked and updated 2026-11-27. Every readable site publishes schema.org `JobPos
 |---|---|---|---|---|
 | **Vieclam24h** | implemented | `Disallow` only for admin, account and `?q` search URLs | `sitemap-index.xml` -> `daily/job-*.xml` -> `job/tintuyendung-N.xml` (about 5,000 URLs each, all industries). The industry is the first path segment, so only `it-phan-mem` and `it-phan-cung-mang` URLs are fetched, newest id first, up to 120 per run | ToS **not reviewed**. Returns **403 when a page request prefers JSON over HTML**, so job pages are requested with an HTML `Accept` header. 40 of 47 stored jobs have a salary range |
 | **TopDev** | implemented | `Allow: /`; blocks login, `/oauth2`, `/td/v2/users`, ... | `/jobs/search` (2 generic pages plus one page for each of 9 technical keywords), then each `/detail-jobs/...` page's JSON-LD. Up to 100 jobs per run, 1.5 s between requests | ToS **not reviewed**. The site's own API returns only a stub without authentication, so it is not used. The `Yeti` bot is blocked |
-| **CareerViet** | implemented | No rule for generic bots | `sitemap/sitemap.xml` -> `job_current_date.xml` (today's ~300 Vietnamese URLs); URL-slug keyword filter; read only the first ~100 KB of each ~1.5 MB page | ToS **not reviewed**. The sitemap only holds the current day, so data builds up over daily runs |
+| **CareerViet** | not read (v2) | No rule for generic bots | `sitemap/sitemap.xml` -> `job_current_date.xml` (today's ~300 Vietnamese URLs); URL-slug keyword filter; read only the first ~100 KB of each ~1.5 MB page | ToS **not reviewed**. The sitemap only holds the current day, so data builds up over daily runs |
 | **CareerLink** | implemented, **throttled** | Disallows only account areas | `sitemaps/sitemap.xml.gz` -> gzipped sitemaps (active job URLs, all industries); slug keyword filter; highest ids first, up to 40 per run, 2 s between requests | ToS **not reviewed**. After a burst of ~120 pages at 1 request/second the site began returning a generic empty page (no job data) even for jobs it had served minutes before. The run now stops after 5 empty pages in a row and is paced at 2 s. Some postings label USD amounts as VND, which normalization discards |
 | **ITviec** | blocked | `Allow: /` | Plain request returns 403 with a Cloudflare challenge, for pages and sitemap | Not pursued: bypassing the challenge is out of bounds |
 | **TopCV** | blocked | Only personal CV pages blocked | Same Cloudflare 403 | Not pursued |
