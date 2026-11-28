@@ -1,9 +1,11 @@
 import { db } from "./db";
 
-export const MODELS = { "claude-sonnet-5-5": "Sonnet (cân bằng)", "claude-haiku-5-5": "Haiku (tiết kiệm nhất)" } as const;
+export const MODELS = { "claude-fable-5-2": "Fable 5.2", "claude-opus-5-5": "Opus 5.5", "claude-sonnet-5-5": "Sonnet 5.5", "claude-haiku-5-5": "Haiku 5.5" } as const;
 
 export type Settings = {
   theme: "dark" | "light";
+  /** manual: runs only from the "Tìm job" button; auto: also daily at runHour:runMinute (launchd). */
+  mode: "manual" | "auto";
   jobsShown: number;
   runHour: number;
   runMinute: number;
@@ -18,6 +20,7 @@ export type Settings = {
 
 export const DEFAULTS: Settings = {
   theme: "dark",
+  mode: "manual",
   jobsShown: 100,
   runHour: 18,
   runMinute: 0,
@@ -31,7 +34,7 @@ export const DEFAULTS: Settings = {
 };
 
 /** Allowed range for every number, used by the form and by validation. */
-export const RANGES: Record<Exclude<keyof Settings, "theme" | "model">, [number, number]> = {
+export const RANGES: Record<Exclude<keyof Settings, "theme" | "mode" | "model">, [number, number]> = {
   jobsShown: [20, 500],
   runHour: [0, 23],
   runMinute: [0, 59],
@@ -53,6 +56,7 @@ export function getSettings(): Settings {
 export function parseSettings(raw: Record<string, unknown>): Settings {
   const s: Settings = { ...DEFAULTS };
   if (raw.theme === "light" || raw.theme === "dark") s.theme = raw.theme;
+  if (raw.mode === "manual" || raw.mode === "auto") s.mode = raw.mode;
   if (typeof raw.model === "string" && Object.hasOwn(MODELS, raw.model)) s.model = raw.model as Settings["model"];
   for (const [key, [min, max]] of Object.entries(RANGES) as [keyof typeof RANGES, [number, number]][]) {
     const n = Number(raw[key]);

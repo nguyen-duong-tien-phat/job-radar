@@ -43,6 +43,13 @@ CREATE TABLE IF NOT EXISTS companies (
   PRIMARY KEY (ats, slug)
 );
 
+-- Every uploaded CV; the file is data/cvs/<id>.pdf.
+CREATE TABLE IF NOT EXISTS cvs (
+  id INTEGER PRIMARY KEY,
+  file_name TEXT NOT NULL,
+  uploaded_at TEXT NOT NULL
+);
+
 -- Key/value settings edited in the app (lib/settings.ts).
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 
@@ -134,4 +141,22 @@ export function changedFields(a: Omit<Profile, "cvText" | "updatedAt">, b: Omit<
   const norm = (v: unknown) =>
     Array.isArray(v) ? JSON.stringify(v.map((s) => String(s).toLowerCase()).sort()) : String(v ?? "");
   return PROFILE_FIELDS.filter((f) => norm(a[f]) !== norm(b[f]));
+}
+
+export type CvFile = { id: number; fileName: string; uploadedAt: string };
+
+export const cvPath = (id: number) => path.join(DATA_DIR, "cvs", `${id}.pdf`);
+
+/** Records an upload and returns its id; the caller writes the file to cvPath(id). */
+export function addCv(fileName: string): number {
+  const r = db().prepare("INSERT INTO cvs (file_name, uploaded_at) VALUES (?, ?)").run(fileName, new Date().toISOString());
+  return Number(r.lastInsertRowid);
+}
+
+export function listCvs(): CvFile[] {
+  return db().prepare("SELECT id, file_name AS fileName, uploaded_at AS uploadedAt FROM cvs ORDER BY id DESC").all() as CvFile[];
+}
+
+export function getCv(id: number): CvFile | null {
+  return (db().prepare("SELECT id, file_name AS fileName, uploaded_at AS uploadedAt FROM cvs WHERE id = ?").get(id) as CvFile | undefined) ?? null;
 }

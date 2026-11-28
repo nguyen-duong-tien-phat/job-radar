@@ -1,8 +1,9 @@
 import type { Profile } from "@/lib/db";
 import { lastCrawlAt, rankedJobs } from "@/lib/score";
-import { scheduleInstalled } from "@/lib/schedule";
+import { runningPid } from "@/lib/run";
 import { getSettings, MODELS, RANGES } from "@/lib/settings";
 import { ago, sourceName, updatedAt } from "@/lib/ui";
+import { RunButton } from "./run-button";
 import { SettingsDialog } from "./settings-dialog";
 
 // The board's own width (container query), not the viewport, decides its columns: it sits beside the profile.
@@ -37,7 +38,8 @@ export function JobBoard({ profile, className = "" }: { profile: Profile; classN
           "Chưa có job"
         )}
         </p>
-        <SettingsDialog settings={settings} ranges={RANGES} models={MODELS} scheduleOn={scheduleInstalled()} />
+        <RunButton running={runningPid() !== null} />
+        <SettingsDialog settings={settings} ranges={RANGES} models={MODELS} />
       </div>
 
       {jobs.length === 0 ? (

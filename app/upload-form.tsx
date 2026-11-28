@@ -16,8 +16,8 @@ export function UploadForm({ label, large = false }: { label: string; large?: bo
           state.error ? "border-alert" : fileName ? "border-signal" : "border-seam-strong"
         } ${large ? "bg-slate" : ""}`}
       >
-        <span className={`flex flex-col justify-center gap-1 px-6 ${large ? "min-h-44 py-8" : "min-h-24 py-5"}`}>
-          <span className={`${large ? "text-lg font-medium" : "font-medium"} ${fileName ? "text-signal [overflow-wrap:anywhere]" : ""}`}>
+        <span className={`flex flex-col justify-center gap-1 px-6 ${large ? "min-h-44 py-8" : "min-h-14 py-3"}`}>
+          <span className={`${large ? "text-lg font-medium" : "text-sm"} ${fileName ? "text-signal [overflow-wrap:anywhere]" : ""}`}>
             {fileName ?? "Kéo CV vào đây hoặc bấm để chọn"}
           </span>
         </span>

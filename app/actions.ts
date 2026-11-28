@@ -1,11 +1,12 @@
 "use server";
 
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { checkCvFile, extractProfile, LOCATIONS, pdfToText, ROLES } from "@/lib/cv";
-import { changedFields, DATA_DIR, db, getProfile, saveProfile } from "@/lib/db";
+import { addCv, changedFields, cvPath, getProfile, saveProfile } from "@/lib/db";
+import { startRun } from "@/lib/run";
 import { installSchedule, removeSchedule, scheduleInstalled } from "@/lib/schedule";
 import { parseSettings, saveSettings } from "@/lib/settings";
 
@@ -28,12 +29,14 @@ export async function uploadCv(_prev: UploadState, form: FormData): Promise<Uplo
     return { error: "PDF không có chữ đọc được (có thể là ảnh scan). Hãy xuất CV ra PDF dạng text." };
   }
 
-  db(); // ensures data/ exists
-  await writeFile(path.join(DATA_DIR, "cv.pdf"), bytes);
+  // Display name only (the file is stored by id): drop control characters, keep it short.
+  const id = addCv(file.name.replace(/[\u0000-\u001f\u007f]/g, "").slice(0, 200) || "cv.pdf");
+  await mkdir(path.dirname(cvPath(id)), { recursive: true });
+  await writeFile(cvPath(id), bytes);
   const found = extractProfile(text);
   const old = getProfile();
   saveProfile({ cvText: text, ...found, minSalaryUsd: old?.minSalaryUsd ?? null });
-  redirect("/");
+  redirect("/?edit=1"); // check what was read from the CV once, before using it
 }
 
 const pickKnown = (values: FormDataEntryValue[], known: object) =>
@@ -78,11 +81,16 @@ export async function saveSettingsAction(_prev: SettingsState, form: FormData): 
   const settings = parseSettings({ ...raw, runHour: hh, runMinute: mm });
   saveSettings(settings);
   try {
-    if (raw.autoRun === "on") installSchedule(settings.runHour, settings.runMinute);
+    if (settings.mode === "auto") installSchedule(settings.runHour, settings.runMinute);
     else if (scheduleInstalled()) removeSchedule();
   } catch (e) {
     return { error: `Đã lưu cài đặt, nhưng chưa cài được lịch chạy: ${e instanceof Error ? e.message : String(e)}`, savedAt: null };
   }
   revalidatePath("/", "layout");
   return { error: null, savedAt: Date.now() };
+}
+
+export async function startRunAction(): Promise<void> {
+  startRun();
+  revalidatePath("/");
 }

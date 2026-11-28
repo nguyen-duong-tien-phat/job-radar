@@ -5,7 +5,7 @@ import type { MODELS, RANGES, Settings } from "@/lib/settings";
 import { buttonPrimary, buttonSecondary } from "@/lib/ui";
 import { saveSettingsAction, type SettingsState } from "./actions";
 
-type Props = { settings: Settings; ranges: typeof RANGES; models: typeof MODELS; scheduleOn: boolean };
+type Props = { settings: Settings; ranges: typeof RANGES; models: typeof MODELS };
 
 const field = "figure h-9 w-20 rounded-md border border-seam-strong bg-transparent px-2.5 text-sm hover:border-steel focus:border-signal focus:outline-none";
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -30,7 +30,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-export function SettingsDialog({ settings: s, ranges, models, scheduleOn }: Props) {
+export function SettingsDialog({ settings: s, ranges, models }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [state, action, pending] = useActionState<SettingsState, FormData>(saveSettingsAction, { error: null, savedAt: null });
 
@@ -42,6 +42,19 @@ export function SettingsDialog({ settings: s, ranges, models, scheduleOn }: Prop
     <Row label={label} htmlFor={`set-${name}`}>
       <input id={`set-${name}`} name={name} type="number" inputMode="numeric" required min={ranges[name][0]} max={ranges[name][1]} defaultValue={s[name]} className={field} />
     </Row>
+  );
+
+  const radios = (name: string, options: [string, string][], value: string) => (
+    <div className="flex gap-1.5">
+      {options.map(([v, label]) => (
+        <label key={v} className="cursor-pointer">
+          <input type="radio" name={name} value={v} defaultChecked={value === v} className="peer sr-only" />
+          <span className="flex h-8 items-center rounded-md border border-seam-strong px-3 text-sm text-steel transition-colors hover:text-paper peer-checked:border-paper peer-checked:text-paper peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-signal">
+            {label}
+          </span>
+        </label>
+      ))}
+    </div>
   );
 
   return (
@@ -63,7 +76,7 @@ export function SettingsDialog({ settings: s, ranges, models, scheduleOn }: Prop
       <dialog
         ref={dialog}
         aria-labelledby="settings-title"
-        className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-md border border-seam-strong bg-slate p-0 text-paper backdrop:bg-black/60"
+        className="m-auto w-[min(56rem,calc(100vw-2rem))] rounded-md border border-seam-strong bg-slate p-0 text-paper backdrop:bg-black/60"
       >
         <form action={action}>
           <div className="flex items-center justify-between px-5 py-4">
@@ -77,33 +90,22 @@ export function SettingsDialog({ settings: s, ranges, models, scheduleOn }: Prop
             </button>
           </div>
 
-          <div className="max-h-[70dvh] overflow-y-auto">
+          <div className="grid md:grid-cols-2 md:divide-x md:divide-seam">
+            <div>
             <Section title="Giao diện">
-              <Row label="Theme">
-                <div className="flex gap-1.5">
-                  {(["dark", "light"] as const).map((t) => (
-                    <label key={t} className="cursor-pointer">
-                      <input type="radio" name="theme" value={t} defaultChecked={s.theme === t} className="peer sr-only" />
-                      <span className="flex h-8 items-center rounded-md border border-seam-strong px-3 text-sm text-steel transition-colors hover:text-paper peer-checked:border-paper peer-checked:text-paper peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-signal">
-                        {t === "dark" ? "Tối" : "Sáng"}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </Row>
+              <Row label="Theme">{radios("theme", [["dark", "Tối"], ["light", "Sáng"]], s.theme)}</Row>
               {num("jobsShown", "Số job hiện trong bảng")}
             </Section>
 
-            <Section title="Chạy tự động">
-              <Row label="Chạy mỗi ngày" htmlFor="set-autoRun">
-                <input id="set-autoRun" name="autoRun" type="checkbox" defaultChecked={scheduleOn} className="h-4 w-4 accent-[var(--signal)]" />
-              </Row>
+            <Section title="Chạy">
+              <Row label="Chế độ">{radios("mode", [["manual", "Thủ công"], ["auto", "Tự động"]], s.mode)}</Row>
               <Row label="Giờ chạy" htmlFor="set-runTime">
                 <input id="set-runTime" name="runTime" type="time" required defaultValue={`${pad(s.runHour)}:${pad(s.runMinute)}`} className={`${field} w-28`} />
               </Row>
               {num("searchEveryDays", "Tìm web bằng Claude mỗi (ngày)")}
             </Section>
 
+            </div>
             <Section title="Tìm web bằng Claude">
               <Row label="Model" htmlFor="set-model">
                 <select id="set-model" name="model" defaultValue={s.model} className="h-9 rounded-md border border-seam-strong bg-slate px-2 text-sm hover:border-steel focus:border-signal focus:outline-none">

@@ -7,8 +7,9 @@ beforeAll(() => {
 
 describe("parseSettings", () => {
   it("accepts valid values and keeps defaults for bad or missing ones", () => {
-    const s = parseSettings({ theme: "light", jobsShown: "50", runHour: "25", searches: "3.5", model: "claude-opus-5-5", enoughFit: "10" });
-    expect(s).toEqual({ ...DEFAULTS, theme: "light", jobsShown: 50, enoughFit: 10 });
+    const s = parseSettings({ theme: "light", mode: "auto", jobsShown: "50", runHour: "25", searches: "3.5", model: "claude-opus-5-5", enoughFit: "10" });
+    expect(s).toEqual({ ...DEFAULTS, theme: "light", mode: "auto", jobsShown: 50, model: "claude-opus-5-5", enoughFit: 10 });
+    expect(parseSettings({ model: "gpt-5" }).model).toBe(DEFAULTS.model);
   });
 });
 
