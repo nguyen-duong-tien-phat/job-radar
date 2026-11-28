@@ -238,7 +238,17 @@ export function SettingsDialog({
                 </Section>
 
                 <Section title="Run">
-                  <Row label="Mode">
+                  <Row label="Keywords" htmlFor="set-searchTerms">
+                  <input
+                    id="set-searchTerms"
+                    name="searchTerms"
+                    defaultValue={s.searchTerms}
+                    maxLength={100}
+                    placeholder="golang, fintech"
+                    className="h-9 w-52 rounded-md border border-seam-strong bg-transparent px-2.5 text-sm placeholder:text-steel hover:border-steel focus:border-signal focus:outline-none"
+                  />
+                </Row>
+                <Row label="Mode">
                     {radios(
                       "mode",
                       [

@@ -168,10 +168,10 @@ export function JobBoard({
               }
               installed={scheduleInstalled()}
             />
-            <RunButton running={false} terms={settings.searchTerms} label="Run now" secondary />
+            <RunButton running={false} label="Run now" secondary />
           </>
         ) : (
-          <RunButton running={running} terms={settings.searchTerms} />
+          <RunButton running={running} />
         )}
         <SettingsDialog
           settings={settings}
