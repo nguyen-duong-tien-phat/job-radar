@@ -2,7 +2,7 @@
 
 Upload your CV once, get a ranked feed of matching IT jobs every morning. Jobs come from companies' own career pages and from IT job boards, for Vietnam and remote work.
 
-> **Status:** v2 rewrite, just started. Nothing below is built yet; this README is the plan. The earlier version (a market statistics dashboard) lives on the `feat/job-radar-pipeline` branch.
+> **Status:** v2 rewrite, just started. Nothing below is built yet; this README is the plan.
 
 ## What it will do
 
