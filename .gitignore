@@ -35,3 +35,8 @@ npm-debug.log*
 
 # Private: uploaded CV, Claude daily output, logs
 data/
+
+# Next.js / TypeScript
+out/
+*.tsbuildinfo
+next-env.d.ts
