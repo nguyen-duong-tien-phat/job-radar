@@ -1,29 +1,16 @@
-# IT Job Radar
+# Job Radar
 
-Daily IT job scraping into a dashboard of hot skills and salaries.
+Personal tool: upload your CV, get a daily ranked feed of matching IT jobs from companies' own career pages (public ATS boards) and IT job boards, for Vietnam and remote work.
 
-> Status: just started. Nothing is built yet — this README is the plan.
+> Status: rewrite in progress (v2). The old market-statistics dashboard lives on the `feat/job-radar-pipeline` branch.
 
-## What it will do
+## How it works
 
-- Collect IT job postings from a few job boards on a daily schedule.
-- Pull the skills and the salary range out of every posting.
-- Show it on a dashboard: which skills are hot right now, and how salaries move over time.
-
-## Roadmap
-
-- [ ] Pick the job boards and check what each one allows scraping
-- [ ] Scraper for the first board, saving raw postings
-- [ ] Parse skills and salary from a posting
-- [ ] Store postings with a first-seen / last-seen date
-- [ ] Daily run (scheduled job)
-- [ ] Dashboard: top skills, salary by skill, trend over time
-- [ ] Deploy
+- CV (PDF) is read locally into a profile: skills, seniority, location.
+- Free structured sources: public ATS APIs (Greenhouse, Lever, Ashby, Workable, SmartRecruiters), Vietnamese IT boards, remote boards. See `docs/sources.md` for the rules each source allows.
+- Once a day, Claude Code (headless, on an existing Claude Pro plan) searches the web for official career pages and new companies.
+- Jobs are deduplicated and scored locally against the profile, with a reason for each score.
 
 ## Stack
 
-Not decided yet.
-
-## Part of
-
-The "Now" section of my [portfolio](https://finn-ngn.vercel.app).
+Next.js (TypeScript) + SQLite (`node:sqlite`). Runs locally, no paid services.
