@@ -4,13 +4,13 @@ Upload your CV once, get a ranked feed of matching IT jobs every morning. Jobs c
 
 > **Status:** v2 rewrite in progress: CV upload, sources, scoring, job board and the web search work; the tracker is next.
 
-## What it will do
+## What it does
 
 - **Read the CV locally.** Upload a PDF; the app pulls out skills, seniority and location, and you can edit the profile.
-- **Find jobs at the source.** Many companies publish their openings through public applicant-tracking boards (Greenhouse, Lever, Ashby, Workable, SmartRecruiters). The app reads those directly, so links point to the company itself.
-- **Cover the boards too.** Vietnamese IT boards (TopDev, Vieclam24h, CareerLink, CareerViet) and remote boards (RemoteOK, Arbeitnow, We Work Remotely, HN "Who is hiring").
+- **Find jobs at the source.** Many companies publish their openings through public applicant-tracking boards (Greenhouse, Lever, Ashby, SmartRecruiters). The app reads those directly, so links point to the company itself.
+- **Cover the boards too.** Vietnamese IT boards (TopDev, Vieclam24h, CareerLink) and remote boards (RemoteOK, Arbeitnow, We Work Remotely, HN "Who is hiring").
 - **Search the web every other day.** A headless Claude Code run looks for official career pages that match the profile and records which board each company uses, so the next crawl reads that company for free.
-- **Rank with a reason.** Each job gets a 0–100 score computed locally (skills, seniority, location, salary, freshness) with a short "matches / missing" explanation. The same job posted in several places is shown once, preferring the official link.
+- **Rank with a reason.** Each job gets a 0–100 score computed locally (skills, location, freshness) with a short "matches / missing" explanation. The same job posted in several places is shown once, preferring the official link.
 - **Track applications.** Saved → applied → interview → offer or rejected, with notes.
 
 ## How it fits together
