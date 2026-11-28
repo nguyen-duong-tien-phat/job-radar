@@ -3,11 +3,25 @@
 // Usage: npm run search                  (skips when the last search was less than 44 hours ago)
 //        npm run search -- --force
 //        npm run search -- --file data/claude/2026-11-28.json   (import a saved answer, no Claude call)
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { addVerifiedCompanies, buildPrompt, hoursSinceLastSearch, RESULT_SCHEMA, SOURCE, toRawJob, trackedCompanies, validateResult } from "../lib/claude-search";
+import { createInterface } from "node:readline";
+import {
+  addVerifiedCompanies,
+  BUDGET,
+  buildPrompt,
+  HARD_LIMIT,
+  hoursSinceLastSearch,
+  MODEL,
+  RESULT_SCHEMA,
+  SOURCE,
+  toolCalls,
+  toRawJob,
+  trackedCompanies,
+  validateResult,
+} from "../lib/claude-search";
 import { DATA_DIR, getProfile } from "../lib/db";
 import { isTargetLocation, isTechJob, recordRun, saveJobs } from "../lib/jobs";
 import { fetchAts } from "../lib/sources/ats";
@@ -32,21 +46,55 @@ let raw: string;
 if (file) {
   raw = readFileSync(file, "utf8");
 } else {
+  console.log(`Claude search: model ${MODEL}, asks for ≤${BUDGET.searches} searches / ≤${BUDGET.fetches} fetches, stops at ${HARD_LIMIT.searches} / ${HARD_LIMIT.fetches}.`);
   // Only web search and fetch: no shell, no file writes. Run outside the repo so no project settings load.
-  const run = spawnSync(
+  // stream-json lets us count tool calls as they happen and stop a run that goes over budget.
+  const child = spawn(
     "claude",
-    ["-p", "--output-format", "json", "--json-schema", JSON.stringify(RESULT_SCHEMA), "--tools", "WebSearch,WebFetch", "--allowedTools", "WebSearch,WebFetch", "--strict-mcp-config", "--no-session-persistence"],
-    { input: buildPrompt(profile, trackedCompanies(), today), cwd: tmpdir(), encoding: "utf8", timeout: 25 * 60_000, maxBuffer: 20 * 1024 * 1024 },
+    ["-p", "--model", MODEL, "--output-format", "stream-json", "--verbose", "--json-schema", JSON.stringify(RESULT_SCHEMA), "--tools", "WebSearch,WebFetch", "--allowedTools", "WebSearch,WebFetch", "--strict-mcp-config", "--no-session-persistence"],
+    { cwd: tmpdir(), stdio: ["pipe", "pipe", "pipe"] },
   );
-  if (run.status !== 0) {
-    const error = (run.error?.message ?? run.stderr ?? "").slice(0, 500) || `exit ${run.status}`;
+  child.stdin.end(buildPrompt(profile, trackedCompanies(), today));
+  const used = { searches: 0, fetches: 0 };
+  let final = "";
+  let stopped: string | null = null;
+  let stderr = "";
+  child.stderr.on("data", (d) => (stderr += d));
+  const timer = setTimeout(() => stop("took longer than 15 minutes"), 15 * 60_000);
+  function stop(reason: string) {
+    stopped ??= reason;
+    child.kill("SIGTERM");
+  }
+  for await (const line of createInterface({ input: child.stdout })) {
+    let event: { type?: string };
+    try {
+      event = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const n = toolCalls(event);
+    used.searches += n.searches;
+    used.fetches += n.fetches;
+    if (used.searches > HARD_LIMIT.searches || used.fetches > HARD_LIMIT.fetches) stop(`over budget (${used.searches} searches, ${used.fetches} fetches)`);
+    if (event.type === "result") final = line;
+  }
+  const code = await new Promise<number | null>((r) => (child.exitCode !== null ? r(child.exitCode) : child.on("close", r)));
+  clearTimeout(timer);
+  if (stopped || code !== 0 || !final) {
+    const error = stopped ? `stopped: ${stopped}` : (stderr.trim().slice(0, 500) || `exit ${code}`);
     recordRun(SOURCE, startedAt, { ok: false, fetched: 0, kept: 0, added: 0, error });
     console.error(`Claude search failed: ${error}`);
     process.exit(1);
   }
-  raw = run.stdout;
+  raw = final;
   mkdirSync(path.join(DATA_DIR, "claude"), { recursive: true });
   writeFileSync(path.join(DATA_DIR, "claude", `${today}.json`), raw);
+  const out = JSON.parse(raw) as { num_turns?: number; usage?: Record<string, number>; total_cost_usd?: number };
+  const u = out.usage ?? {};
+  console.log(
+    `Used: ${used.searches} searches, ${used.fetches} fetches, ${out.num_turns ?? "?"} turns; tokens in ${u.input_tokens ?? 0} (+${u.cache_read_input_tokens ?? 0} cached), out ${u.output_tokens ?? 0}` +
+      (out.total_cost_usd ? ` (≈ $${out.total_cost_usd.toFixed(2)} at API prices; on a Claude plan this counts against usage limits, not money).` : "."),
+  );
 }
 
 let data: unknown;

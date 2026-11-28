@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPrompt, toRawJob, validateResult } from "./claude-search";
+import { buildPrompt, toolCalls, toRawJob, validateResult } from "./claude-search";
 
 describe("validateResult", () => {
   it("keeps well-formed entries and drops the rest", () => {
@@ -40,5 +40,13 @@ describe("buildPrompt", () => {
     expect(p).toContain("Skills: Go");
     expect(p).toContain("Hanoi; remote");
     expect(p).toContain("already tracked: Acme");
+  });
+});
+
+describe("toolCalls", () => {
+  it("counts WebSearch and WebFetch uses in an assistant event", () => {
+    const event = { type: "assistant", message: { content: [{ type: "text" }, { type: "tool_use", name: "WebSearch" }, { type: "tool_use", name: "WebFetch" }, { type: "tool_use", name: "WebSearch" }] } };
+    expect(toolCalls(event)).toEqual({ searches: 2, fetches: 1 });
+    expect(toolCalls({ type: "user", message: { content: [{ type: "tool_use", name: "WebSearch" }] } })).toEqual({ searches: 0, fetches: 0 });
   });
 });
