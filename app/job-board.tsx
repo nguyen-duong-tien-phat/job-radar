@@ -129,8 +129,8 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
                   </span>
                   <span className="min-w-0 [overflow-wrap:anywhere]">
                     <span className={`block font-medium ${isNew(j.first_seen) ? "" : "text-paper/75"}`}>
-                      {isNew(j.first_seen) && <span className="mr-2 rounded-sm bg-signal-dim px-1.5 py-0.5 align-[2px] text-[11px] font-semibold tracking-wide text-signal uppercase">New</span>}
-                      {j.viewed_at && <span className="mr-2 rounded-sm border border-seam-strong px-1.5 py-px align-[2px] text-[11px] font-semibold tracking-wide text-steel uppercase">Viewed</span>}
+                      {isNew(j.first_seen) && <span className="mr-2 rounded bg-signal px-1.5 py-0.5 align-[2px] text-[11px] font-bold tracking-wide text-ink uppercase">New</span>}
+                      {j.viewed_at && <span className="mr-2 rounded bg-cool px-1.5 py-0.5 align-[2px] text-[11px] font-bold tracking-wide text-ink uppercase">Viewed</span>}
                       {j.title}
                     </span>
                     <span className="mt-0.5 block text-sm text-steel">
