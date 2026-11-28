@@ -32,6 +32,10 @@ const MODEL = settings.model;
 const HARD_LIMIT = hardLimit(settings);
 const MIN_HOURS = settings.searchEveryDays * 24 - 4; // slack for a scheduler that fires a little early
 
+if (!file && settings.disabledSources.includes(SOURCE)) {
+  console.log("Skipped: Claude web search is off in Settings.");
+  process.exit(0);
+}
 if (!file && !args.includes("--force") && hoursSinceLastSearch() < MIN_HOURS) {
   console.log(`Skipped: last web search was ${Math.round(hoursSinceLastSearch())} hours ago (runs every ${MIN_HOURS}+ hours; --force to run now).`);
   process.exit(0);
@@ -45,6 +49,7 @@ if (!profile) {
 const startedAt = new Date().toISOString();
 const today = startedAt.slice(0, 10);
 let raw: string;
+let tokens: number | undefined;
 if (file) {
   raw = readFileSync(file, "utf8");
 } else {
@@ -93,6 +98,7 @@ if (file) {
   writeFileSync(path.join(DATA_DIR, "claude", `${today}.json`), raw);
   const out = JSON.parse(raw) as { num_turns?: number; usage?: Record<string, number>; total_cost_usd?: number };
   const u = out.usage ?? {};
+  tokens = (u.input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0) + (u.output_tokens ?? 0);
   console.log(
     `Used: ${used.searches} searches, ${used.fetches} fetches, ${out.num_turns ?? "?"} turns; tokens in ${u.input_tokens ?? 0} (+${u.cache_read_input_tokens ?? 0} cached), out ${u.output_tokens ?? 0}` +
       (out.total_cost_usd ? ` (≈ $${out.total_cost_usd.toFixed(2)} at API prices; on a Claude plan this counts against usage limits, not money).` : "."),
@@ -113,7 +119,7 @@ const official = saveJobs(SOURCE, true, jobs.filter((j) => j.official).map(toRaw
 const board = saveJobs(SOURCE, false, jobs.filter((j) => !j.official).map(toRawJob), false);
 const companies = await addVerifiedCompanies(result.companies, (ats, slug) => fetchAts(ats, slug, slug));
 
-recordRun(SOURCE, startedAt, { ok: true, fetched: result.jobs.length, kept: official.kept + board.kept, added: official.added + board.added });
+recordRun(SOURCE, startedAt, { ok: true, fetched: result.jobs.length, kept: official.kept + board.kept, added: official.added + board.added, tokens });
 console.log(
   `Claude search: ${result.jobs.length} jobs returned (${result.jobs.filter((j) => j.fit >= settings.enoughFit).length} rated fit ≥ ${settings.enoughFit}), ${official.kept + board.kept} kept (${official.added + board.added} new), ${dropped} malformed entries dropped.\n` +
     `Companies added to the daily crawl: ${companies.length ? companies.join(", ") : "none"} (of ${result.companies.length} suggested).`,

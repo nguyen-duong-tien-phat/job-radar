@@ -1,4 +1,5 @@
 import { db } from "../db";
+import { getSettings } from "../settings";
 import type { RawJob } from "../jobs";
 import { ATS, type Ats, fetchAts, SEED_COMPANIES } from "./ats";
 import { fetchArbeitnow, fetchHn, fetchRemoteOk, fetchWwr } from "./remote";
@@ -40,5 +41,6 @@ export function getSources(): Source[] {
       complete: c.ats !== "smartrecruiters",
       fetch: () => fetchAts(c.ats, c.slug, c.name),
     }));
-  return [...ats, ...BOARDS];
+  const off = new Set(getSettings().disabledSources);
+  return [...(off.has("ats") ? [] : ats), ...BOARDS.filter((b) => !off.has(b.name))];
 }

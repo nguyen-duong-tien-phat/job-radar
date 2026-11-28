@@ -10,6 +10,8 @@ describe("parseSettings", () => {
     const s = parseSettings({ theme: "light", mode: "auto", jobsShown: "50", runHour: "25", searches: "3.5", model: "claude-opus-5-5", enoughFit: "10" });
     expect(s).toEqual({ ...DEFAULTS, theme: "light", mode: "auto", jobsShown: 50, model: "claude-opus-5-5", enoughFit: 10 });
     expect(parseSettings({ model: "gpt-5" }).model).toBe(DEFAULTS.model);
+    expect(parseSettings({ disabledSources: '["topdev","nope"]' }).disabledSources).toEqual(["topdev"]);
+    expect(parseSettings({ disabledSources: ["claude-search"] }).disabledSources).toEqual(["claude-search"]);
   });
 });
 
@@ -17,8 +19,8 @@ describe("saveSettings / getSettings", () => {
   it("round-trips through the database", async () => {
     const { getSettings, saveSettings } = await import("./settings");
     expect(getSettings()).toEqual(DEFAULTS);
-    saveSettings({ ...DEFAULTS, runHour: 7, model: "claude-haiku-5-5" });
-    expect(getSettings()).toMatchObject({ runHour: 7, model: "claude-haiku-5-5" });
+    saveSettings({ ...DEFAULTS, runHour: 7, model: "claude-haiku-5-5", disabledSources: ["careerlink"] });
+    expect(getSettings()).toMatchObject({ runHour: 7, model: "claude-haiku-5-5", disabledSources: ["careerlink"] });
   });
 });
 

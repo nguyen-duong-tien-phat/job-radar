@@ -101,8 +101,12 @@ export function saveJobs(source: string, official: boolean, jobs: RawJob[], comp
   return { kept: seen.size, added };
 }
 
-export function recordRun(source: string, startedAt: string, r: { ok: boolean; fetched: number; kept: number; added: number; error?: string }) {
+export function recordRun(source: string, startedAt: string, r: { ok: boolean; fetched: number; kept: number; added: number; error?: string; tokens?: number }) {
   db()
-    .prepare("INSERT INTO crawl_runs (source, started_at, ok, fetched, kept, added, error) VALUES (?, ?, ?, ?, ?, ?, ?)")
-    .run(source, startedAt, r.ok ? 1 : 0, r.fetched, r.kept, r.added, r.error ?? null);
+    .prepare("INSERT INTO crawl_runs (source, started_at, ok, fetched, kept, added, error, tokens) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(source, startedAt, r.ok ? 1 : 0, r.fetched, r.kept, r.added, r.error ?? null, r.tokens ?? null);
+}
+
+export function markViewed(id: number) {
+  db().prepare("UPDATE jobs SET viewed_at = ? WHERE id = ? AND viewed_at IS NULL").run(new Date().toISOString(), id);
 }

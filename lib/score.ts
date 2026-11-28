@@ -14,6 +14,7 @@ export type JobRow = {
   salary: string | null;
   posted_at: string | null;
   first_seen: string;
+  viewed_at: string | null;
 };
 
 export type Scored = JobRow & { score: number; matched: string[]; missing: string[] };
@@ -77,7 +78,7 @@ export function dedupe(jobs: Scored[]): Scored[] {
 /** Open jobs (not missing from 3+ complete runs), scored, one per job, best first. */
 export function rankedJobs(profile: Pick<Profile, "skills" | "locations">): Scored[] {
   // shortcut: scores every stored job in memory on each page load; fine for a few thousand jobs, move scoring into the crawl if it grows past that.
-  const rows = db().prepare("SELECT id, url, source, official, company, title, location, remote, description, salary, posted_at, first_seen FROM jobs WHERE missed < 3").all() as JobRow[];
+  const rows = db().prepare("SELECT id, url, source, official, company, title, location, remote, description, salary, posted_at, first_seen, viewed_at FROM jobs WHERE missed < 3").all() as JobRow[];
   return dedupe(rows.map((r) => scoreJob(r, profile))).sort((a, b) => b.score - a.score);
 }
 

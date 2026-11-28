@@ -15,6 +15,7 @@ const job = (over: Partial<JobRow> = {}): JobRow => ({
   salary: null,
   posted_at: "2026-11-27T00:00:00Z",
   first_seen: "2026-11-27T00:00:00Z",
+  viewed_at: null,
   ...over,
 });
 const profile = { skills: ["node.js", "TypeScript", "PostgreSQL", "Docker"], locations: ["hn"] };

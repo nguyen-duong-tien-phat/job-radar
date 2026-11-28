@@ -20,7 +20,9 @@ export function ago(iso: string | null, now = Date.now()): string {
   return days < 60 ? `${days}d` : `${Math.floor(days / 30)}mo`;
 }
 
-const SOURCE_NAMES: Record<string, string> = {
+/** Sources that can be turned off in Settings; "ats" stands for every company careers page. */
+export const SOURCE_NAMES: Record<string, string> = {
+  ats: "Company careers pages",
   remoteok: "Remote OK",
   arbeitnow: "Arbeitnow",
   weworkremotely: "We Work Remotely",
@@ -28,6 +30,14 @@ const SOURCE_NAMES: Record<string, string> = {
   topdev: "TopDev",
   vieclam24h: "Vieclam24h",
   careerlink: "CareerLink",
+  "claude-search": "Claude web search",
 };
 
 export const sourceName = (source: string) => SOURCE_NAMES[source] ?? "Company careers page";
+
+/** Whether a daily run at hour:minute happens later today or tomorrow. */
+export function nextRunDay(hour: number, minute: number, now = new Date()): "today" | "tomorrow" {
+  const at = new Date(now);
+  at.setHours(hour, minute, 0, 0);
+  return at > now ? "today" : "tomorrow";
+}

@@ -5,9 +5,11 @@ import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { checkCvFile, extractProfile, LOCATIONS, pdfToText, ROLES } from "@/lib/cv";
 import { addCv, changedFields, cvPath, getProfile, saveProfile } from "@/lib/db";
+import { markViewed } from "@/lib/jobs";
 import { startRun } from "@/lib/run";
 import { installSchedule, removeSchedule, scheduleInstalled } from "@/lib/schedule";
 import { parseSettings, saveSettings } from "@/lib/settings";
+import { SOURCE_NAMES } from "@/lib/ui";
 
 export type UploadState = { error: string | null; done: number | null };
 
@@ -81,7 +83,9 @@ export type SettingsState = { error: string | null; savedAt: number | null };
 export async function saveSettingsAction(_prev: SettingsState, form: FormData): Promise<SettingsState> {
   const raw = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]));
   const [hh, mm] = (raw.runTime ?? "").split(":");
-  const settings = parseSettings({ ...raw, runHour: hh, runMinute: mm });
+  const enabled = new Set(form.getAll("source").map(String));
+  const disabledSources = Object.keys(SOURCE_NAMES).filter((k) => !enabled.has(k));
+  const settings = parseSettings({ ...raw, runHour: hh, runMinute: mm, disabledSources });
   saveSettings(settings);
   try {
     if (settings.mode === "auto") installSchedule(settings.runHour, settings.runMinute);
@@ -95,5 +99,11 @@ export async function saveSettingsAction(_prev: SettingsState, form: FormData): 
 
 export async function startRunAction(): Promise<void> {
   startRun();
+  revalidatePath("/");
+}
+
+export async function markViewedAction(id: number): Promise<void> {
+  if (!Number.isInteger(id)) return;
+  markViewed(id);
   revalidatePath("/");
 }

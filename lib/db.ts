@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS jobs (
   posted_at TEXT,
   first_seen TEXT NOT NULL,
   last_seen TEXT NOT NULL,
-  missed INTEGER NOT NULL DEFAULT 0  -- complete-list runs in a row that did not return it
+  missed INTEGER NOT NULL DEFAULT 0, -- complete-list runs in a row that did not return it
+  viewed_at TEXT                     -- when the owner opened the posting from the board
 );
 CREATE INDEX IF NOT EXISTS jobs_source ON jobs (source);
 
@@ -61,7 +62,8 @@ CREATE TABLE IF NOT EXISTS crawl_runs (
   fetched INTEGER NOT NULL,
   kept INTEGER NOT NULL,
   added INTEGER NOT NULL,
-  error TEXT
+  error TEXT,
+  tokens INTEGER                 -- Claude web search only: tokens the run used
 );
 `;
 
@@ -74,6 +76,14 @@ export function db(): DatabaseSync {
     // JOB_RADAR_DB lets tests use ":memory:".
     const conn = new DatabaseSync(process.env.JOB_RADAR_DB ?? path.join(DATA_DIR, "jobradar.db"));
     conn.exec(SCHEMA);
+    // Databases created before these columns existed.
+    const addColumn = (table: string, column: string, type: string) => {
+      if (!(conn.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).some((c) => c.name === column)) {
+        conn.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+      }
+    };
+    addColumn("crawl_runs", "tokens", "INTEGER");
+    addColumn("jobs", "viewed_at", "TEXT");
     g.jobRadarDb = conn;
   }
   return g.jobRadarDb;

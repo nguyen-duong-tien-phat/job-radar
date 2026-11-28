@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { SOURCE_NAMES } from "./ui";
 
 export const MODELS = { "claude-fable-5-2": "Fable 5.2", "claude-opus-5-5": "Opus 5.5", "claude-sonnet-5-5": "Sonnet 5.5", "claude-haiku-5-5": "Haiku 5.5" } as const;
 
@@ -16,6 +17,8 @@ export type Settings = {
   maxJobs: number;
   enoughJobs: number;
   enoughFit: number;
+  /** Keys of SOURCE_NAMES that are turned off. */
+  disabledSources: string[];
 };
 
 export const DEFAULTS: Settings = {
@@ -31,10 +34,11 @@ export const DEFAULTS: Settings = {
   maxJobs: 20,
   enoughJobs: 5,
   enoughFit: 9,
+  disabledSources: [],
 };
 
 /** Allowed range for every number, used by the form and by validation. */
-export const RANGES: Record<Exclude<keyof Settings, "theme" | "mode" | "model">, [number, number]> = {
+export const RANGES: Record<Exclude<keyof Settings, "theme" | "mode" | "model" | "disabledSources">, [number, number]> = {
   jobsShown: [20, 500],
   runHour: [0, 23],
   runMinute: [0, 59],
@@ -57,6 +61,16 @@ export function parseSettings(raw: Record<string, unknown>): Settings {
   const s: Settings = { ...DEFAULTS };
   if (raw.theme === "light" || raw.theme === "dark") s.theme = raw.theme;
   if (raw.mode === "manual" || raw.mode === "auto") s.mode = raw.mode;
+  // Stored as JSON; from the form it arrives as an array.
+  let off: unknown = raw.disabledSources;
+  if (typeof off === "string") {
+    try {
+      off = JSON.parse(off);
+    } catch {
+      off = [];
+    }
+  }
+  if (Array.isArray(off)) s.disabledSources = off.filter((k): k is string => typeof k === "string" && Object.hasOwn(SOURCE_NAMES, k));
   if (typeof raw.model === "string" && Object.hasOwn(MODELS, raw.model)) s.model = raw.model as Settings["model"];
   for (const [key, [min, max]] of Object.entries(RANGES) as [keyof typeof RANGES, [number, number]][]) {
     const n = Number(raw[key]);
@@ -70,7 +84,7 @@ export function saveSettings(s: Settings) {
   const put = conn.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value");
   conn.exec("BEGIN");
   try {
-    for (const [k, v] of Object.entries(s)) put.run(k, String(v));
+    for (const [k, v] of Object.entries(s)) put.run(k, Array.isArray(v) ? JSON.stringify(v) : String(v));
     conn.exec("COMMIT");
   } catch (e) {
     conn.exec("ROLLBACK");

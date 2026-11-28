@@ -167,3 +167,10 @@ export function hoursSinceLastSearch(now = Date.now()): number {
   const row = db().prepare("SELECT MAX(started_at) AS at FROM crawl_runs WHERE source = ? AND ok = 1").get(SOURCE) as { at: string | null };
   return row.at ? (now - Date.parse(row.at)) / 3_600_000 : Infinity;
 }
+
+export function lastSearchTokens(): number | null {
+  const row = db().prepare("SELECT tokens FROM crawl_runs WHERE source = ? AND ok = 1 AND tokens IS NOT NULL ORDER BY started_at DESC LIMIT 1").get(SOURCE) as { tokens: number } | undefined;
+  return row?.tokens ?? null;
+}
+
+export const companyCount = () => (db().prepare("SELECT COUNT(*) AS n FROM companies").get() as { n: number }).n;

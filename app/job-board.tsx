@@ -3,8 +3,10 @@ import type { Profile } from "@/lib/db";
 import { lastCrawlAt, latestRunStart, rankedJobs, type Sort, SORTS, sortJobs } from "@/lib/score";
 import { runningPid } from "@/lib/run";
 import { scheduleInstalled } from "@/lib/schedule";
+import { companyCount, lastSearchTokens } from "@/lib/claude-search";
 import { getSettings, MODELS, RANGES } from "@/lib/settings";
-import { ago, sourceName, updatedAt } from "@/lib/ui";
+import { ago, nextRunDay, sourceName, updatedAt } from "@/lib/ui";
+import { JobLink } from "./job-link";
 import { RunButton } from "./run-button";
 import { SettingsDialog } from "./settings-dialog";
 
@@ -20,10 +22,7 @@ function ScheduleInfo({ hour, minute, everyDays, installed }: { hour: number; mi
   if (!installed) {
     return <p className="text-sm text-alert">Schedule not installed</p>;
   }
-  const next = new Date();
-  next.setHours(hour, minute, 0, 0);
-  if (next.getTime() <= Date.now()) next.setDate(next.getDate() + 1);
-  const day = next.toDateString() === new Date().toDateString() ? "today" : "tomorrow";
+  const day = nextRunDay(hour, minute);
   return (
     <p className="flex h-9 items-center gap-1.5 rounded-md border border-seam-strong px-3 text-[13px] text-steel">
       Next run {day}
@@ -91,7 +90,7 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
         ) : (
           <RunButton running={running} />
         )}
-        <SettingsDialog settings={settings} ranges={RANGES} models={MODELS} />
+        <SettingsDialog settings={settings} ranges={RANGES} models={MODELS} companies={companyCount()} lastSearchTokens={lastSearchTokens()} />
       </div>
 
       {jobs.length === 0 ? (
@@ -111,10 +110,9 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
             {jobs.slice(0, shown).map((j) => (
               // Rows found by an earlier run are dimmed; new ones carry a "New" tag.
               <li key={j.id} className="border-b border-seam last:border-b-0">
-                <a
+                <JobLink
+                  id={j.id}
                   href={j.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className={`grid gap-x-4 gap-y-1 px-5 py-4 transition-colors hover:bg-seam/50 focus-visible:-outline-offset-2 ${COLS}`}
                 >
                   <span className={`figure row-span-3 text-2xl leading-tight @3xl:row-span-1 ${j.score >= 70 ? "text-paper" : "text-steel"}`}>
@@ -124,6 +122,7 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
                   <span className="min-w-0 [overflow-wrap:anywhere]">
                     <span className={`block font-medium ${isNew(j.first_seen) ? "" : "text-paper/75"}`}>
                       {isNew(j.first_seen) && <span className="mr-2 rounded-sm bg-signal-dim px-1.5 py-0.5 align-[2px] text-[11px] font-semibold tracking-wide text-signal uppercase">New</span>}
+                      {j.viewed_at && <span className="mr-2 rounded-sm border border-seam-strong px-1.5 py-px align-[2px] text-[11px] font-semibold tracking-wide text-steel uppercase">Viewed</span>}
                       {j.title}
                     </span>
                     <span className="mt-0.5 block text-sm text-steel">
@@ -153,7 +152,7 @@ export function JobBoard({ profile, sort, className = "" }: { profile: Profile; 
                     <span className="figure block">{ago(j.posted_at ?? j.first_seen)}</span>
                     {!isNew(j.first_seen) && <span className="block text-xs">seen {ago(j.first_seen)}</span>}
                   </span>
-                </a>
+                </JobLink>
               </li>
             ))}
           </ol>
