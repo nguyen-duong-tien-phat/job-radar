@@ -1,4 +1,4 @@
-import { decodeEntities } from "./jobs";
+import { decodeEntities } from "./html";
 import { fold } from "./skills";
 
 export type JobSections = { about: string; scope: string; requirements: string; benefits: string };
