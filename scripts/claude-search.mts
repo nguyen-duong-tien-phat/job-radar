@@ -12,6 +12,7 @@ import {
   addVerifiedCompanies,
   BUDGET,
   buildPrompt,
+  ENOUGH,
   HARD_LIMIT,
   hoursSinceLastSearch,
   MODEL,
@@ -113,6 +114,6 @@ const companies = await addVerifiedCompanies(result.companies, (ats, slug) => fe
 
 recordRun(SOURCE, startedAt, { ok: true, fetched: result.jobs.length, kept: official.kept + board.kept, added: official.added + board.added });
 console.log(
-  `Claude search: ${result.jobs.length} jobs returned, ${official.kept + board.kept} kept (${official.added + board.added} new), ${dropped} malformed entries dropped.\n` +
+  `Claude search: ${result.jobs.length} jobs returned (${result.jobs.filter((j) => j.fit >= ENOUGH.fit).length} rated fit ≥ ${ENOUGH.fit}), ${official.kept + board.kept} kept (${official.added + board.added} new), ${dropped} malformed entries dropped.\n` +
     `Companies added to the daily crawl: ${companies.length ? companies.join(", ") : "none"} (of ${result.companies.length} suggested).`,
 );

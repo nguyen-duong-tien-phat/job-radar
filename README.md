@@ -47,7 +47,7 @@ npm run search         # Claude Code web search; skips if the last one was < 44 
 ops/install-schedule.sh  # optional: run crawl + search every day at 18:00 via launchd
 ```
 
-`npm run search` needs the `claude` CLI logged in to a Claude plan. It runs Claude Haiku (`claude-haiku-5-5`), asks for at most 8 web searches and 15 page fetches, and stops the run at 12 / 24. Each run prints the searches, fetches and tokens it used. Claude gets only web search and page fetch; its answer is validated before anything is stored.
+`npm run search` needs the `claude` CLI logged in to a Claude plan. It runs Claude Haiku (`claude-haiku-5-5`), asks for at most 8 web searches and 15 page fetches, stops searching once it has 5 jobs it rates 9/10 or better, and is killed at 12 / 24. Each run prints the searches, fetches and tokens it used. Claude gets only web search and page fetch; its answer is validated before anything is stored.
 
 ## Roadmap
 
