@@ -16,7 +16,7 @@ const results = await Promise.all(
     const startedAt = new Date().toISOString();
     try {
       const fetched = await s.fetch();
-      const keep = fetched.filter((j) => j.url && j.title && isTargetLocation(j) && isTechJob(j));
+      const keep = fetched.filter((j) => /^https?:\/\//.test(j.url) && j.title && isTargetLocation(j) && isTechJob(j));
       const { kept, added } = saveJobs(s.name, s.official, keep, s.complete);
       recordRun(s.name, startedAt, { ok: true, fetched: fetched.length, kept, added });
       return `${s.name.padEnd(32)} ${String(fetched.length).padStart(5)} fetched ${String(kept).padStart(4)} kept ${String(added).padStart(4)} new`;

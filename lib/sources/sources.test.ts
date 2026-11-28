@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { htmlToText, isTargetLocation, isTechJob } from "../jobs";
 import { parseAshby, parseGreenhouse, parseLever, parseSmartRecruiters } from "./ats";
 import { parseArbeitnow, parseHnThread, parseRemoteOk, parseWwrRss } from "./remote";
-import { parseJobPostingLd } from "./vn";
+import { parseJobPostingLd, readPages } from "./vn";
 
 // Fixtures are synthetic, shaped like each source's real response (checked 2026-11-28).
 
@@ -74,6 +74,11 @@ describe("remote parsers", () => {
     const [j] = parseHnThread({ id: 1, children: [{ id: 7, text: "Acme | Backend Engineer | REMOTE (worldwide) | Full-time<p>We use Python.", children: [] }] });
     expect(j).toMatchObject({ url: "https://news.ycombinator.com/item?id=7", company: "Acme", title: "Backend Engineer", remote: true });
   });
+
+  it("hn does not read 'no remote' as remote", () => {
+    const [j] = parseHnThread({ id: 1, children: [{ id: 8, text: "Acme | Engineer | SF, ONSITE, no remote", children: [] }] });
+    expect(j.remote).toBe(false);
+  });
 });
 
 describe("JobPosting JSON-LD", () => {
@@ -112,5 +117,24 @@ describe("filters", () => {
     expect(isTechJob({ title: "FullStack Developer - Khối Công nghệ", description: "Mô tả ngắn" })).toBe(true);
     expect(isTechJob({ title: "Equipment Technician, Operations Engineering", description: "" })).toBe(false);
     expect(isTechJob({ title: "Pre-sale (Network Security) Engineer", description: "" })).toBe(false);
+    expect(isTechJob({ title: "Kỹ sư điện toán đám mây", description: "" })).toBe(true);
+    expect(isTechJob({ title: "Kỹ sư điện", description: "" })).toBe(false);
+  });
+});
+
+describe("readPages", () => {
+  const ld = '<script type="application/ld+json">{"@type":"JobPosting","title":"Dev","hiringOrganization":{"name":"X"}}</script>';
+
+  it("skips a failing page and stops after a run of empty pages", async () => {
+    const pages: Record<string, string> = { a: ld, c: ld };
+    const asked: string[] = [];
+    const get = async (url: string) => {
+      asked.push(url);
+      if (url === "b") throw new Error("HTTP 404");
+      return pages[url] ?? "<html></html>";
+    };
+    const jobs = await readPages(["a", "b", "c", "d", "e", "f", "g", "h", "i"], 50, 0, 3, get);
+    expect(jobs.map((j) => j.url)).toEqual(["a", "c"]);
+    expect(asked).toEqual(["a", "b", "c", "d", "e", "f"]); // d, e, f empty: stop
   });
 });

@@ -63,12 +63,15 @@ export function parseJobPostingLd(html: string, pageUrl: string): RawJob | null 
 const idOf = (url: string) => Number(url.match(/(\d+)(?:\.html)?\/?$/)?.[1] ?? 0);
 const newestFirst = (urls: Iterable<string>) => [...new Set(urls)].sort((a, b) => idOf(b) - idOf(a));
 
-/** Reads job pages newest first; stops after `maxEmpty` pages in a row without job data (a board throttling us). */
-async function readPages(urls: string[], cap: number, gapMs: number, maxEmpty = 5): Promise<RawJob[]> {
+/**
+ * Reads job pages in the given order; stops after `maxEmpty` pages in a row without job data (a board throttling us).
+ * A page that fails (often a job removed after the sitemap was written) counts as empty instead of failing the source.
+ */
+export async function readPages(urls: string[], cap: number, gapMs: number, maxEmpty = 5, get = getText): Promise<RawJob[]> {
   const jobs: RawJob[] = [];
   let empty = 0;
   for (const url of urls.slice(0, cap)) {
-    const job = parseJobPostingLd(await getText(url, { gapMs }), url);
+    const job = parseJobPostingLd(await get(url, { gapMs }).catch(() => ""), url);
     if (job) {
       jobs.push(job);
       empty = 0;

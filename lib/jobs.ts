@@ -45,7 +45,7 @@ const TECH_TITLE =
   /\b(engineer|engineering|developer|dev|devops|sre|architect|programmer|software|frontend|front-end|backend|back-end|full ?stack|mobile|ios|android|data|qa|qc|tester|test|automation|cloud|security|machine learning|ml|ai|it|lap trinh|ky su|phat trien|kiem thu|du lieu|pentest|penetration|tech lead|cto)\b/;
 // Titles that look technical but are other trades.
 const NON_TECH_TITLE =
-  /\b(sales|pre-?sales?|account|marketing|recruit\w*|talent|hr|human resources|technician|mechanical|civil|electrical|dien|co khi|xay dung|ban hang|kinh doanh|ke toan)\b/;
+  /\b(sales|pre-?sales?|account|marketing|recruit\w*|talent|hr|human resources|technician|mechanical|civil|electrical|dien(?! toan)|co khi|xay dung|ban hang|kinh doanh|ke toan)\b/;
 
 // "USA Only", "Remote (EU only)": remote, but not open to someone in Vietnam.
 const REGION_ONLY = /\bonly\b/;

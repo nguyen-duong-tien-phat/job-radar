@@ -72,7 +72,7 @@ export function parseHnThread(thread: HnItem): RawJob[] {
         title: parts[1] || header.slice(0, 120),
         company: parts[0]?.slice(0, 80) ?? "",
         location: parts.slice(2).join(" | "),
-        remote: /\bremote\b/i.test(header),
+        remote: /\bremote\b/i.test(header) && !/\b(no|not) remote\b/i.test(header),
         description: text,
         postedAt: c.created_at ?? null,
       };

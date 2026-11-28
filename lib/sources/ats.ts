@@ -119,8 +119,13 @@ export async function fetchAts(ats: Ats, slug: string, company: string): Promise
       const list = await getJson<SrList>(`https://api.smartrecruiters.com/v1/companies/${s}/postings?country=vn&limit=100`);
       list.content = list.content.filter((j) => TECHY.test(j.name));
       const details = new Map<string, SrDetail>();
-      for (const j of list.content.slice(0, SR_DETAIL_CAP)) details.set(j.id, await getJson<SrDetail>(j.ref));
       list.content = list.content.slice(0, SR_DETAIL_CAP);
+      for (const j of list.content) {
+        // A posting withdrawn between the list and its detail call is skipped, not fatal.
+        const detail = await getJson<SrDetail>(j.ref).catch(() => null);
+        if (detail) details.set(j.id, detail);
+      }
+      list.content = list.content.filter((j) => details.has(j.id));
       return parseSmartRecruiters(list, details, slug, company);
     }
   }
@@ -129,9 +134,7 @@ export async function fetchAts(ats: Ats, slug: string, company: string): Promise
 /** Companies known at first run; the daily web search adds more to the `companies` table. */
 export const SEED_COMPANIES: { ats: Ats; slug: string; name: string }[] = [
   { ats: "greenhouse", slug: "workatbackbase", name: "Backbase" },
-  { ats: "greenhouse", slug: "navervietnam", name: "NAVER Vietnam" },
   { ats: "lever", slug: "keyloop", name: "Keyloop" },
   { ats: "lever", slug: "gradion", name: "Gradion" },
-  { ats: "lever", slug: "ninjavan", name: "Ninja Van" },
   { ats: "smartrecruiters", slug: "BoschGroup", name: "Bosch" },
 ];
