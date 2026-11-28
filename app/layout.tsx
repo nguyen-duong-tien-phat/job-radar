@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import { getProfile } from "@/lib/db";
+import { NavLinks } from "./nav-links";
 import { updatedAt } from "@/lib/ui";
 import "./globals.css";
 
@@ -35,12 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Job Radar
             </Link>
             {profile && (
-              <nav aria-label="Chính" className="self-stretch">
-                {/* shortcut: Profile is the only page with a profile, so it is always the current one; use the pathname once the job board exists. */}
-                <Link href="/profile" aria-current="page" className="-mb-px flex h-full items-center border-b-2 border-signal text-sm">
-                  Profile
-                </Link>
-              </nav>
+              <NavLinks />
             )}
             <p className="ml-auto text-[13px] text-steel">
               {profile ? (

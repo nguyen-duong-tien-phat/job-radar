@@ -15,7 +15,7 @@ export function parseRemoteOk(data: RemoteOk): RawJob[] {
       location: j.location || "Remote",
       remote: true,
       description: htmlToText(j.description ?? ""),
-      salary: Number(j.salary_min) > 0 ? `${j.salary_min}–${j.salary_max} USD/năm` : null,
+      salary: Number(j.salary_min) > 0 ? `${Number(j.salary_min).toLocaleString("vi-VN")}–${Number(j.salary_max).toLocaleString("vi-VN")} USD/năm` : null,
       postedAt: j.date ?? null,
     }));
 }

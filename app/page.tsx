@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
 import { getProfile } from "@/lib/db";
+import { JobBoard } from "./job-board";
 import { UploadForm } from "./upload-form";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +11,8 @@ const STEPS = [
 ] as const;
 
 export default function Home() {
-  // shortcut: no job board yet, so a saved profile goes straight to /profile; point this at the board once it exists.
-  if (getProfile()) redirect("/profile");
+  const profile = getProfile();
+  if (profile) return <JobBoard profile={profile} />;
   return (
     <main className="mx-auto grid w-full max-w-6xl content-start gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[1fr_1.15fr] lg:gap-x-20 lg:py-24">
       <div className="lg:col-start-1 lg:row-start-1">
