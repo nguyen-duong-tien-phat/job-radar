@@ -9,9 +9,9 @@ import type { RawJob } from "./jobs";
 export const SOURCE = "claude-search";
 
 // Model and limits keep one run small on a Claude Pro plan (it runs every other day).
-// Haiku: finding job pages and copying facts into a fixed JSON shape needs no deeper reasoning.
-// Upgrade to "claude-sonnet-5-5" only if results are often wrong or thin.
-export const MODEL = "claude-haiku-5-5";
+// Sonnet: better judgment of fit and of which page is the official one; costs more of the plan than Haiku,
+// which the search budget below keeps bounded. "claude-haiku-5-5" is the cheaper option.
+export const MODEL = "claude-sonnet-5-5";
 export const BUDGET = { searches: 8, fetches: 15, jobs: 20 };
 // Stop searching as soon as this many strong matches are found.
 export const ENOUGH = { jobs: 5, fit: 9 };
