@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-28T00:00:00Z",
+  "title": "Design System: Job Radar",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "neutral", "displayName": "Board Ink", "canonical": "#0f1215", "tonalRamp": ["#040405", "#08090a", "#0b0e10", "#0f1215", "#4b4d50", "#7b7d7e", "#abacad", "#dbdbdc"] },
+      "slate": { "role": "neutral", "displayName": "Raised Slate", "canonical": "#171b20", "tonalRamp": ["#060708", "#0c0e10", "#111418", "#171b20", "#515458", "#7f8284", "#aeafb1", "#dcddde"] },
+      "seam": { "role": "neutral", "displayName": "Hairline Seam", "canonical": "#2a3038", "tonalRamp": ["#0a0c0e", "#15181c", "#20242a", "#2a3038", "#5f646a", "#8a8d92", "#b4b7b9", "#dfe0e1"] },
+      "seam-strong": { "role": "neutral", "displayName": "Strong Seam", "canonical": "#3a424d", "tonalRamp": ["#0e1013", "#1d2126", "#2c323a", "#3a424d", "#6b717a", "#93979d", "#babdc1", "#e1e3e4"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#ecebe6", "tonalRamp": ["#3b3b3a", "#767673", "#b1b0ac", "#ecebe6", "#f1f0ec", "#f5f4f1", "#f8f8f6", "#fcfcfb"] },
+      "steel": { "role": "neutral", "displayName": "Steel", "canonical": "#8a929c", "tonalRamp": ["#222427", "#45494e", "#686e75", "#8a929c", "#a7adb5", "#bfc3c9", "#d6d9dc", "#edeff0"] },
+      "signal": { "role": "primary", "displayName": "Signal Yellow", "canonical": "#f2c230", "tonalRamp": ["#3c300c", "#796118", "#b69224", "#f2c230", "#f5d164", "#f8dd8d", "#faeab7", "#fdf6e0"] },
+      "signal-bright": { "role": "primary", "displayName": "Signal Bright", "canonical": "#ffd24d" },
+      "signal-dim": { "role": "primary", "displayName": "Signal Dim", "canonical": "#3a3116", "tonalRamp": ["#0e0c06", "#1d180b", "#2c2510", "#3a3116", "#6b6450", "#938e7f", "#bab7ad", "#e1e0dc"] },
+      "alert": { "role": "tertiary", "displayName": "Alert Coral", "canonical": "#ff8a7a", "tonalRamp": ["#40221e", "#80453d", "#bf685c", "#ff8a7a", "#ffa79b", "#ffbfb6", "#ffd6d0", "#ffedeb"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "One page heading per screen (first-run hero); 1.875rem, 2.25rem from sm." },
+      "headline": { "displayName": "Headline", "purpose": "Page titles such as Profile." },
+      "title": { "displayName": "Title", "purpose": "Section headings inside a page." },
+      "body": { "displayName": "Body", "purpose": "Base text." },
+      "body-sm": { "displayName": "Body small", "purpose": "Controls, chips, buttons, helper and status text." },
+      "label": { "displayName": "Caption", "purpose": "Uppercase tracked steel caption above the value it labels." },
+      "figure-lg": { "displayName": "Pass figure", "purpose": "Editable numeric pass values; 1.875rem, 2.25rem from sm." },
+      "figure": { "displayName": "Figure", "purpose": "Inline counts, timestamps, sizes, step indexes." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "color-transition", "value": "color, background-color, border-color 150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "The only motion: hover and state color changes. Zeroed under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single commit action per screen.",
+      "html": "<button class=\"ds-btn-primary\">Lưu profile</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border: 0; border-radius: 6px; background: var(--color-signal, #f2c230); color: var(--color-ink, #0f1215); font: 600 14px/1 var(--font-sans, system-ui); cursor: pointer; transition: background-color 150ms; } .ds-btn-primary:hover { background: #ffd24d; } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-signal, #f2c230); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: .6; cursor: wait; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Every non-commit action.",
+      "html": "<button class=\"ds-btn-secondary\">Upload CV mới</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border: 1px solid var(--color-seam-strong, #3a424d); border-radius: 6px; background: transparent; color: var(--color-paper, #ecebe6); font: 500 14px/1 var(--font-sans, system-ui); cursor: pointer; transition: background-color 150ms, border-color 150ms; } .ds-btn-secondary:hover { border-color: var(--color-steel, #8a929c); background: var(--color-seam, #2a3038); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--color-signal, #f2c230); outline-offset: 2px; }"
+    },
+    {
+      "name": "Skill Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Removable skill; signal while added but unsaved.",
+      "html": "<ul class=\"ds-chips\"><li class=\"ds-chip\">TypeScript<button class=\"ds-chip-x\" aria-label=\"Bỏ TypeScript\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\"><path d=\"M1 1l8 8M9 1L1 9\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/></svg></button></li><li class=\"ds-chip ds-chip--new\">Kafka<button class=\"ds-chip-x\" aria-label=\"Bỏ Kafka\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\"><path d=\"M1 1l8 8M9 1L1 9\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/></svg></button></li></ul>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; } .ds-chip { display: flex; align-items: center; height: 32px; padding-left: 12px; border: 1px solid var(--color-seam-strong, #3a424d); border-radius: 6px; color: var(--color-paper, #ecebe6); font: 400 14px var(--font-sans, system-ui); } .ds-chip--new { border-color: var(--color-signal, #f2c230); color: var(--color-signal, #f2c230); } .ds-chip-x { display: flex; align-items: center; justify-content: center; width: 32px; height: 100%; margin-left: 4px; border: 0; border-radius: 0 6px 6px 0; background: none; color: var(--color-steel, #8a929c); cursor: pointer; } .ds-chip-x:hover { background: var(--color-seam, #2a3038); color: var(--color-paper, #ecebe6); } .ds-chip-x:focus-visible { outline: 2px solid var(--color-signal, #f2c230); outline-offset: 2px; }"
+    },
+    {
+      "name": "Toggle",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Checkbox option; selected is paper, unsaved change is signal.",
+      "html": "<div class=\"ds-toggles\"><span class=\"ds-toggle ds-toggle--on\"><svg width=\"10\" height=\"8\" viewBox=\"0 0 10 8\" aria-hidden=\"true\"><path d=\"M1 4l2.5 2.5L9 1\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>Backend</span><span class=\"ds-toggle\">Frontend</span><span class=\"ds-toggle ds-toggle--added\">Remote</span></div>",
+      "css": ".ds-toggles { display: flex; flex-wrap: wrap; gap: 8px; } .ds-toggle { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid var(--color-seam-strong, #3a424d); border-radius: 6px; color: var(--color-steel, #8a929c); font: 400 14px var(--font-sans, system-ui); cursor: pointer; transition: color 150ms, border-color 150ms; } .ds-toggle:hover { border-color: var(--color-steel, #8a929c); color: var(--color-paper, #ecebe6); } .ds-toggle--on { border-color: var(--color-paper, #ecebe6); color: var(--color-paper, #ecebe6); } .ds-toggle--added { border-color: var(--color-signal, #f2c230); color: var(--color-signal, #f2c230); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Short entry field; focus is a signal border.",
+      "html": "<input class=\"ds-input\" placeholder=\"Thêm skill, ví dụ Kafka\">",
+      "css": ".ds-input { height: 36px; padding: 0 12px; border: 1px solid var(--color-seam-strong, #3a424d); border-radius: 6px; background: transparent; color: var(--color-paper, #ecebe6); caret-color: var(--color-signal, #f2c230); font: 400 14px var(--font-sans, system-ui); } .ds-input::placeholder { color: var(--color-steel, #8a929c); } .ds-input:hover { border-color: var(--color-steel, #8a929c); } .ds-input:focus { outline: none; border-color: var(--color-signal, #f2c230); }"
+    },
+    {
+      "name": "Pass",
+      "kind": "card",
+      "refersTo": "pass",
+      "description": "One slate document split into captioned segments by hairlines; the signature container.",
+      "html": "<div class=\"ds-pass\"><div class=\"ds-pass-head\"><span class=\"ds-caption\">Profile từ CV</span><span class=\"ds-figure-sm\">11 skill · 20:33 28-11</span></div><div class=\"ds-pass-row\"><div class=\"ds-seg\"><span class=\"ds-caption\">Kinh nghiệm</span><div><span class=\"ds-figure-lg\">6</span> <span class=\"ds-unit\">năm</span></div></div><div class=\"ds-seg\"><span class=\"ds-caption ds-caption--lit\">Lương tối thiểu · vừa cập nhật</span><div><span class=\"ds-figure-lg ds-lit\">2000</span> <span class=\"ds-unit\">USD/tháng</span></div></div></div></div>",
+      "css": ".ds-pass { border: 1px solid var(--color-seam, #2a3038); border-radius: 6px; background: var(--color-slate, #171b20); color: var(--color-paper, #ecebe6); font-family: var(--font-sans, system-ui); } .ds-pass-head { display: flex; justify-content: space-between; gap: 24px; padding: 12px 24px; border-bottom: 1px solid var(--color-seam, #2a3038); } .ds-pass-row { display: grid; grid-template-columns: 1fr 1fr; } .ds-pass-row > .ds-seg + .ds-seg { border-left: 1px solid var(--color-seam, #2a3038); } .ds-seg { padding: 20px 24px; } .ds-caption { display: block; margin-bottom: 12px; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--color-steel, #8a929c); } .ds-pass-head .ds-caption { margin: 0; } .ds-caption--lit { color: var(--color-signal, #f2c230); } .ds-figure-sm { font: 400 13px var(--font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; color: var(--color-steel, #8a929c); } .ds-figure-lg { display: inline-block; min-width: 6ch; padding-bottom: 4px; border-bottom: 1px solid var(--color-seam-strong, #3a424d); font: 500 36px/1 var(--font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; } .ds-lit { color: var(--color-signal, #f2c230); border-color: var(--color-signal, #f2c230); } .ds-unit { font-size: 14px; color: var(--color-steel, #8a929c); }"
+    },
+    {
+      "name": "Drop Zone Stub",
+      "kind": "custom",
+      "description": "Dashed tear-off stub for the CV PDF, with a dashed facts footer on first run.",
+      "html": "<label class=\"ds-stub\"><span class=\"ds-stub-body\"><span class=\"ds-stub-cap\">CV của bạn</span><span class=\"ds-stub-main\">Kéo file vào đây hoặc bấm để chọn</span><span class=\"ds-stub-hint\">Chỉ PDF có chữ, không nhận ảnh scan.</span></span><span class=\"ds-stub-foot\"><span><span class=\"ds-stub-cap\">Định dạng</span>PDF</span><span><span class=\"ds-stub-cap\">Tối đa</span>5 MB</span><span><span class=\"ds-stub-cap\">Lưu ở</span>Máy này</span></span></label>",
+      "css": ".ds-stub { display: flex; flex-direction: column; border: 1px dashed var(--color-seam-strong, #3a424d); border-radius: 6px; background: var(--color-slate, #171b20); color: var(--color-paper, #ecebe6); font-family: var(--font-sans, system-ui); cursor: pointer; transition: border-color 150ms; } .ds-stub:hover { border-color: var(--color-steel, #8a929c); } .ds-stub:focus-within { border-color: var(--color-signal, #f2c230); } .ds-stub-body { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 176px; padding: 32px 24px; } .ds-stub-cap { display: block; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--color-steel, #8a929c); } .ds-stub-main { font-size: 18px; font-weight: 500; } .ds-stub-hint { font-size: 14px; color: var(--color-steel, #8a929c); } .ds-stub-foot { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px dashed var(--color-seam-strong, #3a424d); font: 400 14px var(--font-mono, ui-monospace, monospace); } .ds-stub-foot > span { padding: 12px 24px; } .ds-stub-foot > span + span { border-left: 1px dashed var(--color-seam-strong, #3a424d); }"
+    },
+    {
+      "name": "Header Nav",
+      "kind": "nav",
+      "description": "56px bar under a hairline; current page underlined in signal; mono status line right.",
+      "html": "<header class=\"ds-nav\"><a class=\"ds-nav-brand\" href=\"#\">Job Radar</a><a class=\"ds-nav-link\" aria-current=\"page\" href=\"#\">Profile</a><p class=\"ds-nav-status\">CV cập nhật <span>20:33 28-11</span></p></header>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 32px; height: 56px; padding: 0 32px; border-bottom: 1px solid var(--color-seam, #2a3038); background: var(--color-ink, #0f1215); color: var(--color-paper, #ecebe6); font-family: var(--font-sans, system-ui); } .ds-nav-brand { font-weight: 600; letter-spacing: .025em; color: inherit; text-decoration: none; } .ds-nav-link { display: flex; align-items: center; align-self: stretch; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: 14px; color: inherit; text-decoration: none; } .ds-nav-link[aria-current=page] { border-bottom-color: var(--color-signal, #f2c230); } .ds-nav-link:focus-visible { outline: 2px solid var(--color-signal, #f2c230); outline-offset: 2px; } .ds-nav-status { margin: 0 0 0 auto; font-size: 13px; color: var(--color-steel, #8a929c); } .ds-nav-status span { font-family: var(--font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Saved Status",
+      "kind": "custom",
+      "refersTo": "status-saved",
+      "description": "Note naming what the last save changed.",
+      "html": "<p class=\"ds-saved\" role=\"status\">Đã lưu: skill, lương tối thiểu</p>",
+      "css": ".ds-saved { display: inline-block; margin: 0; padding: 6px 12px; border-radius: 6px; background: var(--color-signal-dim, #3a3116); color: var(--color-signal, #f2c230); font: 400 14px var(--font-sans, system-ui); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Evening Gate Board",
+    "overview": "Jobs are departures and the profile is a boarding pass. The whole app sits on one dark ink ground, the way a gate board glows in a terminal at night: rows divided by hairlines, information grouped into segmented documents rather than floating cards, and a single signal yellow that marks what you can act on or what has just changed. It is read in the evening, on a laptop, carefully; the surface is calm and finite, never a dashboard.\n\nDensity is moderate and deliberate. Words are set in Be Vietnam Pro (full Vietnamese coverage); every figure (counts, times, years, salary, file size, step numbers) is set in JetBrains Mono with tabular numerals, so numbers read like printed fields on a ticket. Small tracked uppercase captions sit above values, exactly as segment captions sit on a pass. Corners are square-ish, there are no shadows and no gradients; depth comes from one raised slate panel and hairline seams.\n\nThe signature behavior: a value that differs from what is saved, or that just got saved, is lit signal yellow and stays lit until it has been seen.",
+    "keyCharacteristics": [
+      "One dark ground (ink), one raised plane (slate), hairline seams for all structure.",
+      "One accent, signal yellow, reserved for the primary action, changed/new state, and focus.",
+      "Words in Be Vietnam Pro; figures in JetBrains Mono, tabular.",
+      "Tracked uppercase captions over values, pass-segment style.",
+      "6px corners everywhere; dashed borders mark tear-off stubs (drop zones, the replace-CV section).",
+      "Flat: no shadows, no gradients, no decorative motion."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Signal yellow means exactly three things: the primary action, something new or changed, and focus. If a yellow element is none of these, it is wrong.", "section": "colors" },
+      { "name": "The Lit Until Seen Rule", "body": "A changed value turns signal yellow (border and text) as soon as it differs from the saved state, and a just-saved field lights its caption with a short \"vừa cập nhật\" note. Removed items stay visible in steel with a line-through and signal border until saved.", "section": "colors" },
+      { "name": "The Printed Figures Rule", "body": "Any number the user reads as data (time, count, years, salary, size, step index) is set in the mono with tabular numerals. Words never are.", "section": "typography" },
+      { "name": "The Caption Labels a Value Rule", "body": "The uppercase caption names the field or value directly beneath it, as on a pass. It is never a decorative eyebrow above a heading.", "section": "typography" },
+      { "name": "The No-Lift Rule", "body": "No box-shadow, no gradient, no blur. Structure is drawn with 1px seams; emphasis is drawn with signal color.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep a single yellow primary button per screen; everything else is secondary or plain text.",
+      "Do light any changed or new value in signal yellow (border and text) until it is saved or seen.",
+      "Do set every data number in JetBrains Mono with tabular numerals.",
+      "Do group related fields into one slate pass divided by hairline seams.",
+      "Do use the 11px tracked uppercase steel caption directly above the value it labels.",
+      "Do use 6px corners and 1px seams on every bordered element."
+    ],
+    "donts": [
+      "Don't use shadows, gradients or blur; depth is ink, slate and seams.",
+      "Don't use signal yellow for decoration, headings or icons; it is action, change and focus only.",
+      "Don't float separate cards in a grid; segment one document instead.",
+      "Don't put an uppercase caption above a heading as an eyebrow or kicker.",
+      "Don't set prose words in the mono face.",
+      "Don't add motion beyond color transitions; reduced-motion users get none."
+    ]
+  }
+}

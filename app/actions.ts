@@ -5,7 +5,7 @@ import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { checkCvFile, extractProfile, LOCATIONS, pdfToText, ROLES } from "@/lib/cv";
-import { DATA_DIR, db, getProfile, saveProfile } from "@/lib/db";
+import { changedFields, DATA_DIR, db, getProfile, saveProfile } from "@/lib/db";
 
 export type UploadState = { error: string | null };
 
@@ -54,14 +54,16 @@ export async function updateProfile(form: FormData): Promise<void> {
     return Number.isInteger(n) && n > 0 ? n : null;
   };
 
-  saveProfile({
-    cvText: current.cvText,
+  const next = {
     skills,
     roles: pickKnown(form.getAll("roles"), ROLES),
     locations: pickKnown(form.getAll("locations"), LOCATIONS),
     years: num("years"),
     minSalaryUsd: num("minSalaryUsd"),
-  });
+  };
+  const changed = changedFields(current, next);
+  saveProfile({ cvText: current.cvText, ...next });
   revalidatePath("/profile");
-  redirect("/profile?saved=1");
+  // The page lights the changed fields once, so the user sees what this save did.
+  redirect(`/profile?saved=${changed.join(",") || "none"}`);
 }

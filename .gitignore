@@ -40,3 +40,6 @@ data/
 out/
 *.tsbuildinfo
 next-env.d.ts
+
+# Impeccable: downloaded quality-bar images (third-party)
+.impeccable/reference/

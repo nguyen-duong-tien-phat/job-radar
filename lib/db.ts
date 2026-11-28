@@ -83,3 +83,13 @@ export function saveProfile(p: Omit<Profile, "updatedAt">): void {
       new Date().toISOString(),
     );
 }
+
+export const PROFILE_FIELDS = ["skills", "roles", "locations", "years", "minSalaryUsd"] as const;
+export type ProfileField = (typeof PROFILE_FIELDS)[number];
+
+/** Fields whose value differs; list order and case of skills do not count. */
+export function changedFields(a: Omit<Profile, "cvText" | "updatedAt">, b: Omit<Profile, "cvText" | "updatedAt">): ProfileField[] {
+  const norm = (v: unknown) =>
+    Array.isArray(v) ? JSON.stringify(v.map((s) => String(s).toLowerCase()).sort()) : String(v ?? "");
+  return PROFILE_FIELDS.filter((f) => norm(a[f]) !== norm(b[f]));
+}
