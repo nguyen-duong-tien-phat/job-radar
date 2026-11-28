@@ -78,11 +78,20 @@ const newestFirst = (urls: Iterable<string>) => [...new Set(urls)].sort((a, b) =
  * Reads job pages in the given order; stops after `maxEmpty` pages in a row without job data (a board throttling us).
  * A page that fails (often a job removed after the sitemap was written) counts as empty instead of failing the source.
  */
-export async function readPages(urls: string[], cap: number, gapMs: number, maxEmpty = 5, get = getText): Promise<RawJob[]> {
+export async function readPages(
+  urls: string[],
+  cap: number,
+  gapMs: number,
+  maxEmpty = 5,
+  get = getText,
+  enrich: (job: RawJob, html: string) => RawJob = (job) => job,
+): Promise<RawJob[]> {
   const jobs: RawJob[] = [];
   let empty = 0;
   for (const url of urls.slice(0, cap)) {
-    const job = parseJobPostingLd(await get(url, { gapMs }).catch(() => ""), url);
+    const html = await get(url, { gapMs }).catch(() => "");
+    const parsed = parseJobPostingLd(html, url);
+    const job = parsed && enrich(parsed, html);
     if (job) {
       jobs.push(job);
       empty = 0;
@@ -90,6 +99,31 @@ export async function readPages(urls: string[], cap: number, gapMs: number, maxE
   }
   return jobs;
 }
+
+/**
+ * TopDev's JSON-LD leaves "Your role & responsibilities" and "Your skills & qualifications" empty; the page shows them.
+ * They are read from the page text, between their headings and the numbered next section.
+ */
+export function topdevSections(html: string): { scope: string; requirements: string } {
+  const text = htmlToText(html.replace(/<script[\s\S]*?<\/script>/gi, ""));
+  const between = (start: string, end: RegExp) => {
+    const i = text.indexOf(start);
+    if (i < 0) return "";
+    const rest = text.slice(i + start.length);
+    const j = rest.search(end);
+    return (j < 0 ? rest.slice(0, 3000) : rest.slice(0, j)).trim();
+  };
+  return {
+    scope: between("Your role & responsibilities", /\n\d+\n|Your skills & qualifications/),
+    requirements: between("Your skills & qualifications", /\n\d+\n|\nBenefits/),
+  };
+}
+
+const withTopdevSections = (job: RawJob, html: string): RawJob => {
+  const { scope, requirements } = topdevSections(html);
+  if (!scope && !requirements) return job;
+  return { ...job, description: `Responsibilities\n${scope}\nRequirements\n${requirements}\n${job.description}` };
+};
 
 const TOPDEV_KEYWORDS = ["", "nodejs", "java", "python", "php", "react", "golang", "devops", "tester", "mobile", "data"];
 
@@ -99,7 +133,7 @@ export async function fetchTopDev(): Promise<RawJob[]> {
     const html = await getText(`https://topdev.vn/jobs/search${k ? `?keyword=${k}` : ""}`, { gapMs: 1500 });
     for (const m of html.matchAll(/detail-jobs\/[a-z0-9-]+-\d+/g)) urls.push(`https://topdev.vn/${m[0]}`);
   }
-  return readPages(newestFirst(urls), 80, 1500);
+  return readPages(newestFirst(urls), 80, 1500, 5, getText, withTopdevSections);
 }
 
 const VL24H_IT = /^https:\/\/vieclam24h\.vn\/(it-phan-mem|it-phan-cung-mang)\//;

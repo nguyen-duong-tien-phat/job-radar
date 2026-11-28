@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { htmlToText, isTargetLocation, isTechJob } from "../jobs";
 import { parseAshby, parseGreenhouse, parseLever, parseSmartRecruiters } from "./ats";
 import { parseArbeitnow, parseHnThread, parseRemoteOk, parseWwrRss } from "./remote";
-import { parseJobPostingLd, readPages } from "./vn";
+import { parseJobPostingLd, readPages, topdevSections } from "./vn";
 
 // Fixtures are synthetic, shaped like each source's real response (checked 2026-11-28).
 
@@ -141,5 +141,16 @@ describe("readPages", () => {
     const jobs = await readPages(["a", "b", "c", "d", "e", "f", "g", "h", "i"], 50, 0, 3, get);
     expect(jobs.map((j) => j.url)).toEqual(["a", "c"]);
     expect(asked).toEqual(["a", "b", "c", "d", "e", "f"]); // d, e, f empty: stop
+  });
+});
+
+describe("topdevSections", () => {
+  it("reads role and skills from the page between the numbered sections", () => {
+    const html = `<div><h2>Your role & responsibilities</h2><ul><li>Build APIs</li><li>Review code</li></ul></div><div>2</div><div><h2>Your skills & qualifications</h2><ul><li>PHP</li></ul></div><div>3</div><div><h2>Benefits</h2><ul><li>Laptop</li></ul></div>`;
+    expect(topdevSections(html)).toEqual({ scope: "- Build APIs\n- Review code", requirements: "- PHP" });
+  });
+
+  it("returns empty sections when the page has none", () => {
+    expect(topdevSections("<p>Nothing</p>")).toEqual({ scope: "", requirements: "" });
   });
 });
